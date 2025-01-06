@@ -1,0 +1,15 @@
+pegar o mapa em grid, computar a melhor distância entre dois pontos usando 
+o A*, busca uniforme, busca em profundidade, busca em largura e busca gulosa.
+
+
+distancia manhatan: a distância dos pontos pode ser feita transformando isso
+                     em um triângulo retângulo, a distância manhatan é 
+                    a soma dos catetos desse triângulo.
+                    
+(ideal para quando todas as arestas tem o mesmo custo)
+
+*** Cada movimento leste-oeste é penalizado (ainda não proposto) 
+
+É interessante mostrar a árvore de busca, a fila, nós gerados e visitados.
+
+retorno: nós gerados, visitados e custo do caminho.
