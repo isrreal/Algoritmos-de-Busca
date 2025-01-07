@@ -56,20 +56,20 @@ public:
 	const std::string& vertexToCoordenate(size_t vertex) const;
     
     size_t heuristic1(int x1, int y1, int x2, int y2);
-
 	size_t heuristic2(int x1, int y1, int x2, int y2);
-	
-	size_t euclideanDistance(int x1, int y1, int x2, int y2);
 
+	size_t euclideanDistance(int x1, int y1, int x2, int y2);
 	size_t manhatannDistance(int x1, int y1, int x2, int y2);
 	
 	std::string f1(size_t x, size_t y);
-
 	std::string f2(size_t x, size_t y);
-	
 	std::string f3(size_t x, size_t y);
-		
 	std::string f4(size_t x, size_t y);
+
+	constexpr size_t c1();
+	constexpr size_t c2();
+	size_t c3(size_t steps);
+	size_t c4(size_t steps);
 	
     const std::unordered_map<size_t, std::list<size_t>>& getAdjacencyList() const;
     

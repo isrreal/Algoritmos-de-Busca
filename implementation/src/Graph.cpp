@@ -201,6 +201,22 @@ std::string Graph::f4(size_t x, size_t y) {
 					"(" + std::to_string(x) + "," + std::to_string(y + 1) + ")";
 }
 
+constexpr size_t Graph::c1() {
+    return 10;
+}
+
+constexpr size_t Graph::c2() {
+    return 15;
+}
+
+size_t Graph::c3(size_t steps) {
+    return 10 + (std::abs(5 - static_cast<int>(steps)) % 6);
+}
+
+size_t Graph::c4(size_t steps) {
+    return 5 + (std::abs(10 - static_cast<int>(steps)) % 11);
+}
+
 void Graph::breadthFirstSearch(size_t u, size_t v) {
     std::vector<bool> visited(this->order, false);
     std::queue<int> queue;
