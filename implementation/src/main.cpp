@@ -64,7 +64,8 @@ void buildGraphFile() {
 int main(void) {
     buildGraphFile();
     Graph graph("graph.txt", cartesian_plane,map_vertices_to_coordenates, map_coordenates_to_vertices, false);
- 	std::cout << graph.f1(0, 6);
+	graph.breadthFirstSearch(0, 30);
+	
     return 0;
 }
 

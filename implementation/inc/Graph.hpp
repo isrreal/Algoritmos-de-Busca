@@ -71,6 +71,13 @@ public:
 	size_t c3(size_t steps);
 	size_t c4(size_t steps);
 	
+	void printStats(const std::string& initial_state,
+				   const std::string& search_objective,
+ 				   const std::vector<std::string>& path,
+ 			       size_t path_cost,
+ 				   size_t generated_vertices_amount,
+ 				   size_t visited_vertices_amount);
+
     const std::unordered_map<size_t, std::list<size_t>>& getAdjacencyList() const;
     
     const std::list<size_t>& getAdjacencyList(size_t vertex) const;
