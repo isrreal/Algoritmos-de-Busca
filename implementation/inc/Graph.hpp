@@ -20,6 +20,9 @@ private:
     size_t Delta;
     
     std::unordered_map<size_t, std::list<size_t>> adjacency_list;
+	std::unordered_map<size_t, std::string> map_vertices_to_coordenates;
+	std::unordered_map<std::string, size_t> map_coordenates_to_vertices;
+	
     std::vector<std::vector<std::string>> cartesian_plane;
     
     void addVertex(size_t source);
@@ -29,7 +32,12 @@ private:
     size_t computeMinVertexDegree();
 public:	
 	Graph(size_t order, bool isDirected, float probabilityOfEdge);	
-    Graph(const std::string& filename, std::vector<std::vector<std::string>> cartesian_plane, bool isDirected);
+    Graph(const std::string& filename, 
+		  const std::vector<std::vector<std::string>>& cartesian_plane, 
+		  const std::unordered_map<size_t, std::string>& map_vertices_to_coordenates,
+		  const std::unordered_map<std::string, size_t>& map_coordenates_to_vertices,
+		  bool isDirected);
+		  
     Graph(size_t order, bool isDirected);	
     Graph(const Graph& graph);
 
@@ -42,6 +50,10 @@ public:
     size_t getMaxDegree() const;
     size_t getMinDegree() const;
    	const std::vector<std::vector<std::string>>& getCartesianPlane() const;
+   	
+	size_t coordenateToVertex(const std::string& coordenate) const;
+	
+	const std::string& vertexToCoordenate(size_t vertex) const;
     
     size_t heuristic1(int x1, int y1, int x2, int y2);
 
@@ -50,7 +62,15 @@ public:
 	size_t euclideanDistance(int x1, int y1, int x2, int y2);
 
 	size_t manhatannDistance(int x1, int y1, int x2, int y2);
+	
+	std::string f1(size_t x, size_t y);
 
+	std::string f2(size_t x, size_t y);
+	
+	std::string f3(size_t x, size_t y);
+		
+	std::string f4(size_t x, size_t y);
+	
     const std::unordered_map<size_t, std::list<size_t>>& getAdjacencyList() const;
     
     const std::list<size_t>& getAdjacencyList(size_t vertex) const;
@@ -72,8 +92,6 @@ public:
     void setVertexLabel(size_t vertex, int label);
     
     void setAdjacenciesLabel(size_t vertex, int label);
-    
-    void DFSVisit(size_t u, std::vector<bool>& discovered, size_t& numberOfVertices, size_t& minDegree);
 
     std::vector<std::pair<int, int>> connectedComponents();
     

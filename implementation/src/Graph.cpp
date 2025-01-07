@@ -39,8 +39,15 @@ Graph::Graph(size_t order, bool isDirected, float probabilityOfEdge):
     Delta = computeMaxVertexDegree();
 }
 
-Graph::Graph(const std::string& filename, std::vector<std::vector<std::string>> cartesian_plane, bool isDirected): 
-	order(0), size(0), isDirected(isDirected), delta(0), Delta(0), cartesian_plane(cartesian_plane) {
+Graph::Graph(const std::string& filename, 
+		  const std::vector<std::vector<std::string>>& cartesian_plane, 
+		  const std::unordered_map<size_t, std::string>& map_vertices_to_coordenates,
+		  const std::unordered_map<std::string, size_t>& map_coordenates_to_vertices,
+		  bool isDirected): 
+			order(0), size(0), isDirected(isDirected), delta(0), Delta(0),
+			map_vertices_to_coordenates(map_vertices_to_coordenates),
+			map_coordenates_to_vertices(map_coordenates_to_vertices),
+			cartesian_plane(cartesian_plane) {
 	
     std::ifstream file(filename);
     
@@ -70,7 +77,10 @@ Graph::Graph(const std::string& filename, std::vector<std::vector<std::string>> 
 
 Graph::Graph(const Graph& graph): order(graph.order), size(graph.size),
 	isDirected(graph.isDirected), delta(graph.delta),
-	Delta(graph.Delta), adjacency_list(graph.adjacency_list) {}
+	Delta(graph.Delta), adjacency_list(graph.adjacency_list), 
+	map_vertices_to_coordenates(graph.map_vertices_to_coordenates),
+	map_coordenates_to_vertices(graph.map_coordenates_to_vertices), 
+	cartesian_plane(graph.cartesian_plane) {}
 
 size_t Graph::computeMaxVertexDegree() {
 	size_t maxDegree = getVertexDegree(getAdjacencyList().begin()->first);
@@ -137,6 +147,14 @@ size_t Graph::getOrder() const { return this->order; }
 
 const std::unordered_map<size_t, std::list<size_t>>& Graph::getAdjacencyList() const { return this->adjacency_list; }
 
+size_t Graph::coordenateToVertex(const std::string& coordenate) const {
+    return this->map_coordenates_to_vertices.at(coordenate);
+}
+
+const std::string& Graph::vertexToCoordenate(size_t vertex) const {
+    return this->map_vertices_to_coordenates.at(vertex);
+}
+
 const std::list<size_t>& Graph::getAdjacencyList(size_t vertex) const { return this->adjacency_list.at(vertex); }
 
 const std::vector<std::vector<std::string>>& Graph::getCartesianPlane() const { return this->cartesian_plane; }
@@ -146,7 +164,6 @@ bool Graph::vertexExists(size_t vertex) const { return adjacency_list.find(verte
 bool Graph::edgeExists(size_t u, size_t v) const {
     return std::find(adjacency_list.at(u).begin(), adjacency_list.at(u).end(), v) != adjacency_list.at(u).end();
 }
-
 
 size_t Graph::heuristic1(int x1, int y1, int x2, int y2) {
 	return 10 * euclideanDistance(x1, y1, x2, y2);
@@ -164,6 +181,26 @@ size_t Graph::manhatannDistance(int x1, int y1, int x2, int y2) {
 	return std::abs(x1 - x2) + std::abs(y1 - y2);
 }
 
+std::string Graph::f1(size_t x, size_t y) {
+	return x == 0 ? "(" + std::to_string(x) + "," + std::to_string(y) + ")" :
+					"(" + std::to_string(x - 1) + "," + std::to_string(y) + ")";
+}
+
+std::string Graph::f2(size_t x, size_t y) {
+	return x == 30 ? "(" + std::to_string(x) + "," + std::to_string(y) + ")" :
+					"(" + std::to_string(x + 1) + "," + std::to_string(y) + ")";
+}
+
+std::string Graph::f3(size_t x, size_t y) {
+	return y == 0 ? "(" + std::to_string(x) + "," + std::to_string(y) + ")" :
+					"(" + std::to_string(x) + "," + std::to_string(y - 1) + ")";
+}
+
+std::string Graph::f4(size_t x, size_t y) {
+	return y == 30 ? "(" + std::to_string(x) + "," + std::to_string(y) + ")" :
+					"(" + std::to_string(x) + "," + std::to_string(y + 1) + ")";
+}
+
 void Graph::breadthFirstSearch(size_t u, size_t v) {
     std::vector<bool> visited(this->order, false);
     std::queue<int> queue;
@@ -175,7 +212,6 @@ void Graph::breadthFirstSearch(size_t u, size_t v) {
         queue.pop();
       	
       	if (temp == v) {
-      		std::cout << "Retornado. Deu bom!";
       		return;
       	}
 
@@ -198,7 +234,9 @@ void Graph::depthFirstSearch(size_t u, size_t v) {
         size_t temp = stack.top();
         stack.pop();
         
-        if (temp == v) { return; }
+        if (temp == v) { 
+        	return;
+        }
       
         for (const auto& neighbor: getAdjacencyList(temp)) {
             if (!visited[neighbor]) {
@@ -221,7 +259,9 @@ void Graph::uniformCostSearch(size_t u, size_t v) {
         auto [current_node, current_cost] = queue.top();
         queue.pop();
 
-        if (visited[current_node]) {continue; };
+        if (visited[current_node]) {
+        	continue;
+        }
 
         visited[current_node] = true;
 
@@ -345,9 +385,8 @@ std::ostream& operator<< (std::ostream& os, const Graph& graph) {
         for (const auto& neighbor : v) { 
             os << neighbor << " ";  
     	}
-    	        
-        os << '\n';
     	
+        os << '\n'; 	
  	}
  	   
     return os;
