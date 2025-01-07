@@ -260,10 +260,12 @@ void Graph::breadthFirstSearch(size_t u, size_t v) {
         temp = queue.front();
         
         if (!last_visited.empty()) {
+        	// compares if the 'x' axis increased or decreased
 		    if ((last_visited.top().at(1) > vertexToCoordenate(temp).at(1)) || (last_visited.top().at(1) < vertexToCoordenate(temp).at(1))) {
 		    	path_cost += c3(steps_root_to_objective_amount);
 		    }
 		    
+        	// compares if the 'y' axis increased or decreased
 		    else if ((last_visited.top().at(4) > vertexToCoordenate(temp).at(4)) || (last_visited.top().at(4) < vertexToCoordenate(temp).at(4))) {
 		    	path_cost += c2();
 		    }
