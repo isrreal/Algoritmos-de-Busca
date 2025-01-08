@@ -41,12 +41,12 @@ Graph::Graph(size_t order, bool isDirected, float probabilityOfEdge):
 
 Graph::Graph(const std::string& filename, 
 		  const std::vector<std::vector<std::string>>& cartesian_plane, 
-		  const std::unordered_map<size_t, std::string>& map_vertices_to_coordenates,
-		  const std::unordered_map<std::string, size_t>& map_coordenates_to_vertices,
+		  const std::unordered_map<size_t, std::string>& map_vertices_to_coordinates,
+		  const std::unordered_map<std::string, size_t>& map_coordinates_to_vertices,
 		  bool isDirected): 
 			order(0), size(0), isDirected(isDirected), delta(0), Delta(0),
-			map_vertices_to_coordenates(map_vertices_to_coordenates),
-			map_coordenates_to_vertices(map_coordenates_to_vertices),
+			map_vertices_to_coordinates(map_vertices_to_coordinates),
+			map_coordinates_to_vertices(map_coordinates_to_vertices),
 			cartesian_plane(cartesian_plane) {
 	
     std::ifstream file(filename);
@@ -78,8 +78,8 @@ Graph::Graph(const std::string& filename,
 Graph::Graph(const Graph& graph): order(graph.order), size(graph.size),
 	isDirected(graph.isDirected), delta(graph.delta),
 	Delta(graph.Delta), adjacency_list(graph.adjacency_list), 
-	map_vertices_to_coordenates(graph.map_vertices_to_coordenates),
-	map_coordenates_to_vertices(graph.map_coordenates_to_vertices), 
+	map_vertices_to_coordinates(graph.map_vertices_to_coordinates),
+	map_coordinates_to_vertices(graph.map_coordinates_to_vertices), 
 	cartesian_plane(graph.cartesian_plane) {}
 
 size_t Graph::computeMaxVertexDegree() {
@@ -147,13 +147,26 @@ size_t Graph::getOrder() const { return this->order; }
 
 const std::unordered_map<size_t, std::list<size_t>>& Graph::getAdjacencyList() const { return this->adjacency_list; }
 
-size_t Graph::coordenateToVertex(const std::string& coordenate) const {
-    return this->map_coordenates_to_vertices.at(coordenate);
+size_t Graph::coordinateToVertex(const std::string& coordinate) const {
+    return this->map_coordinates_to_vertices.at(coordinate);
 }
 
-const std::string& Graph::vertexToCoordenate(size_t vertex) const {
-    return this->map_vertices_to_coordenates.at(vertex);
+std::pair<size_t, size_t> Graph::vertexToCoordinate(size_t vertex) const {
+    const std::string& coord_str = this->map_vertices_to_coordinates.at(vertex);
+    
+    std::string clean_str = coord_str.substr(1, coord_str.length() - 2);
+    
+    std::istringstream iss(clean_str);
+    std::string x_str, y_str;
+    std::getline(iss, x_str, ',');
+    std::getline(iss, y_str);
+    
+    int x = std::stoi(x_str);
+    int y = std::stoi(y_str);
+    
+    return {x, y};
 }
+
 
 const std::list<size_t>& Graph::getAdjacencyList(size_t vertex) const { return this->adjacency_list.at(vertex); }
 
@@ -237,9 +250,45 @@ void Graph::printStats(const std::string& initial_state,
 	 			 		  << "Visited vertices amount: " << visited_vertices_amount << '\n';
 }
 
-void Graph::breadthFirstSearch(size_t u, size_t v) {
+std::string Graph::coordinatesToString(const std::pair<size_t, size_t>& coordinates) {
+	auto x = coordinates.first;
+	auto y = coordinates.second;
+	
+	return "(" + std::to_string(x) + "," + std::to_string(y) + ")";
+}
+
+void Graph::cenaryChoose(std::stack<std::pair<size_t, size_t>>& last_visited,
+                         size_t& path_cost, size_t steps_root_to_objective_amount, size_t cenary, size_t temp) {
+    auto last_coords = last_visited.top(); 
+    auto current_coords = vertexToCoordinate(temp);
+    
+    if (cenary == 1) {
+        path_cost += c1();
+    }
+    
+    else {      
+        // Compara se "x" (eixo horizontal) mudou
+        if ((current_coords.first > last_coords.first) || (current_coords.first < last_coords.first)) {
+            if (cenary == 2) {
+                path_cost += c2();
+            }
+            else if (cenary == 3) {
+                path_cost += c3(steps_root_to_objective_amount);
+            }
+            else if (cenary == 4) {
+                path_cost += c4(steps_root_to_objective_amount);
+            }
+        }
+        // Compara se "y" (eixo vertical) mudou
+        else if ((current_coords.second > last_coords.second) || (current_coords.second < last_coords.second)) {
+            path_cost += c1();
+        }		        
+    }         
+}
+
+void Graph::breadthFirstSearch(size_t u, size_t v, size_t cenary) {
     std::vector<bool> visited(this->order, false);
-    std::stack<std::string> last_visited;
+    std::stack<std::pair<size_t, size_t>> last_visited;
     
     std::vector<std::string> path;
     path.reserve(this->order);
@@ -251,57 +300,54 @@ void Graph::breadthFirstSearch(size_t u, size_t v) {
     size_t visited_vertices_amount {0};
     size_t path_cost {0};
     size_t steps_root_to_objective_amount {0};
-
+   
     visited[u] = true;
     queue.push(u);
-
+    
+	
     while (!queue.empty()) {
-    	
         temp = queue.front();
         
         if (!last_visited.empty()) {
-        	// compares if the 'x' axis increased or decreased
-		    if ((last_visited.top().at(1) > vertexToCoordenate(temp).at(1)) || (last_visited.top().at(1) < vertexToCoordenate(temp).at(1))) {
-		    	path_cost += c3(steps_root_to_objective_amount);
-		    }
-		    
-        	// compares if the 'y' axis increased or decreased
-		    else if ((last_visited.top().at(4) > vertexToCoordenate(temp).at(4)) || (last_visited.top().at(4) < vertexToCoordenate(temp).at(4))) {
-		    	path_cost += c2();
-		    }
-	 	}
+            cenaryChoose(last_visited, path_cost, steps_root_to_objective_amount, cenary, temp);
+        }
         
-        last_visited.push(vertexToCoordenate(temp));
+        last_visited.push(vertexToCoordinate(temp));
         queue.pop();
         
         ++visited_vertices_amount;
-        path.push_back(vertexToCoordenate(temp));
-      	
-      	if (temp == v) {
-  		    printStats(vertexToCoordenate(u), vertexToCoordenate(v), path, path_cost, generated_vertices_amount, visited_vertices_amount);
-  		    return;
-      	}
+        path.push_back(coordinatesToString(vertexToCoordinate(temp))); 
+        
+        if (temp == v) {
+            printStats(coordinatesToString(vertexToCoordinate(u)),
+             			coordinatesToString(vertexToCoordinate(v)),
+             			path, path_cost, generated_vertices_amount,
+             			visited_vertices_amount);
+            return;
+        }
 
         for (const auto& neighbor : getAdjacencyList(temp)) {
-        	if (!visited[neighbor]) {
-            	visited[neighbor] = true;
+            if (!visited[neighbor]) {
+                visited[neighbor] = true;
                 queue.push(neighbor);
                 ++generated_vertices_amount;
             }
         }
     }
+    
 }
 
-void Graph::depthFirstSearch(size_t u, size_t v) {
+
+void Graph::depthFirstSearch(size_t u, size_t v, size_t cenary) {
     std::vector<bool> visited(this->order, false);
     std::vector<std::string> path;
-    std::stack<std::string> last_visited;
+    std::stack<std::pair<size_t, size_t>> last_visited;
     
     path.reserve(this->order);
     
     std::stack<size_t> stack;
     
-    size_t temp {0};
+   	size_t temp {0};
     size_t generated_vertices_amount {0};
     size_t visited_vertices_amount {0};
     size_t path_cost {0};
@@ -309,32 +355,29 @@ void Graph::depthFirstSearch(size_t u, size_t v) {
     
     visited[u] = true;
     stack.push(u);
-
+    
     while (!stack.empty()) {
         temp = stack.top();
         
         if (!last_visited.empty()) {
-		    if ((last_visited.top().at(1) > vertexToCoordenate(temp).at(1)) || (last_visited.top().at(1) < vertexToCoordenate(temp).at(1))) {
-		    	path_cost += c3(steps_root_to_objective_amount);
-		    }
-		    
-		    else if ((last_visited.top().at(4) > vertexToCoordenate(temp).at(4)) || (last_visited.top().at(4) < vertexToCoordenate(temp).at(4))) {
-		    	path_cost += c2();
-		    }
-	 	}
-	 
-    	last_visited.push(vertexToCoordenate(temp));
+            cenaryChoose(last_visited, path_cost, steps_root_to_objective_amount, cenary, temp);
+        }
+
+        last_visited.push(vertexToCoordinate(temp));
         stack.pop();
         
         ++visited_vertices_amount;
-        path.push_back(vertexToCoordenate(temp));
-        
+        path.push_back(coordinatesToString(vertexToCoordinate(temp)));
+
         if (temp == v) {
-  		    printStats(vertexToCoordenate(u), vertexToCoordenate(v), path, path_cost, generated_vertices_amount, visited_vertices_amount);
-  		    return;
-      	}
-      
-        for (const auto& neighbor: getAdjacencyList(temp)) {
+            printStats(coordinatesToString(vertexToCoordinate(u)),
+            	 	  	coordinatesToString(vertexToCoordinate(v)), 
+            	 	  	path, path_cost, generated_vertices_amount,
+            	 	  	visited_vertices_amount);
+            return;
+        }
+        
+        for (const auto& neighbor : getAdjacencyList(temp)) {
             if (!visited[neighbor]) {
                 visited[neighbor] = true;
                 stack.push(neighbor);
@@ -344,8 +387,9 @@ void Graph::depthFirstSearch(size_t u, size_t v) {
     }
 }
 
+
 /*
-void Graph::uniformCostSearch(size_t u, size_t v) {
+void Graph::uniformCostSearch(size_t u, size_t v, size_t cenary) {
     std::vector<bool> visited(this->order, false);
 
     std::priority_queue<std::pair<size_t, int>, std::vector<std::pair<size_t, int>>, std::greater<>> queue;
@@ -378,7 +422,7 @@ void Graph::uniformCostSearch(size_t u, size_t v) {
 }
 
 
-void Graph::AStar(size_t u, size_t v) {
+void Graph::AStar(size_t u, size_t v, size_t cenary) {
     std::vector<bool> visited(this->order, false);
     
     std::priority_queue<std::pair<size_t, int>, std::vector<std::pair<size_t, int>>, std::greater<>> queue;
@@ -408,7 +452,7 @@ void Graph::AStar(size_t u, size_t v) {
 }
 
 
-void Graph::greedySearch(size_t u, size_t v) {
+void Graph::greedySearch(size_t u, size_t v, size_t cenary) {
     std::vector<bool> visited(this->order, false);
     std::unordered_map<size_t, int> cost;         
 

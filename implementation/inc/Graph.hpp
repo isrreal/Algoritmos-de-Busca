@@ -20,8 +20,8 @@ private:
     size_t Delta;
     
     std::unordered_map<size_t, std::list<size_t>> adjacency_list;
-	std::unordered_map<size_t, std::string> map_vertices_to_coordenates;
-	std::unordered_map<std::string, size_t> map_coordenates_to_vertices;
+	std::unordered_map<size_t, std::string> map_vertices_to_coordinates;
+	std::unordered_map<std::string, size_t> map_coordinates_to_vertices;
 	
     std::vector<std::vector<std::string>> cartesian_plane;
     
@@ -34,8 +34,8 @@ public:
 	Graph(size_t order, bool isDirected, float probabilityOfEdge);	
     Graph(const std::string& filename, 
 		  const std::vector<std::vector<std::string>>& cartesian_plane, 
-		  const std::unordered_map<size_t, std::string>& map_vertices_to_coordenates,
-		  const std::unordered_map<std::string, size_t>& map_coordenates_to_vertices,
+		  const std::unordered_map<size_t, std::string>& map_vertices_to_coordinates,
+		  const std::unordered_map<std::string, size_t>& map_coordinates_to_vertices,
 		  bool isDirected);
 		  
     Graph(size_t order, bool isDirected);	
@@ -51,9 +51,9 @@ public:
     size_t getMinDegree() const;
    	const std::vector<std::vector<std::string>>& getCartesianPlane() const;
    	
-	size_t coordenateToVertex(const std::string& coordenate) const;
+	size_t coordinateToVertex(const std::string& coordinate) const;
 	
-	const std::string& vertexToCoordenate(size_t vertex) const;
+	std::pair<size_t, size_t> vertexToCoordinate(size_t vertex) const;
     
     size_t heuristic1(int x1, int y1, int x2, int y2);
 	size_t heuristic2(int x1, int y1, int x2, int y2);
@@ -77,8 +77,14 @@ public:
  			       size_t path_cost,
  				   size_t generated_vertices_amount,
  				   size_t visited_vertices_amount);
+ 				   
+   	void cenaryChoose(std::stack<std::pair<size_t, size_t>>& last_visited,
+                     size_t& path_cost, size_t steps_root_to_objective_amount,
+                     size_t cenary, size_t temp);
+                     
+   	std::string coordinatesToString(const std::pair<size_t, size_t>& coordinates);
 
-    const std::unordered_map<size_t, std::list<size_t>>& getAdjacencyList() const;
+	const std::unordered_map<size_t, std::list<size_t>>& getAdjacencyList() const;
     
     const std::list<size_t>& getAdjacencyList(size_t vertex) const;
     
@@ -86,15 +92,15 @@ public:
     
     bool vertexExists(size_t vertex) const;	
 
-    void breadthFirstSearch(size_t u, size_t v);  
+    void breadthFirstSearch(size_t u, size_t v, size_t cenary);  
     
-    void depthFirstSearch(size_t u, size_t v);  
+    void depthFirstSearch(size_t u, size_t v, size_t cenary);  
     
-    void uniformCostSearch(size_t u, size_t v);
+    void uniformCostSearch(size_t u, size_t v, size_t cenary);
     
-    void AStar(size_t u, size_t v);
+    void AStar(size_t u, size_t v, size_t cenary);
     
-    void greedySearch(size_t u, size_t v);
+    void greedySearch(size_t u, size_t v, size_t cenary);
     
     void setVertexLabel(size_t vertex, int label);
     
