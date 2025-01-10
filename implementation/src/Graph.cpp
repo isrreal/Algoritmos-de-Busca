@@ -317,6 +317,7 @@ std::string Graph::coordinatesToString(const std::pair<size_t, size_t>& coordina
 
 void Graph::cenaryChoose(std::stack<std::pair<size_t, size_t>>& last_visited,
                          size_t& path_cost, size_t steps_root_to_objective_amount, size_t cenary, size_t temp) {
+                
     auto last_coords = last_visited.top(); 
     auto current_coords = vertexToCoordinate(temp);
     
@@ -342,6 +343,38 @@ void Graph::cenaryChoose(std::stack<std::pair<size_t, size_t>>& last_visited,
             path_cost += c1();
         }		        
     }         
+}
+
+size_t Graph::neighborCost(size_t u, size_t v, size_t steps_root_to_objective_amount, size_t cenary) {
+    auto current_coords = vertexToCoordinate(u);
+    auto destination_coords = vertexToCoordinate(v);
+    
+    size_t path_cost {0};
+    
+    if (cenary == 1) {
+        path_cost += c1();
+    }
+    
+    else {      
+        // Compara se "x" (eixo horizontal) mudou
+        if ((current_coords.first > destination_coords.first) || (current_coords.first < destination_coords.first)) {
+            if (cenary == 2) {
+                path_cost += c2();
+            }
+            else if (cenary == 3) {
+                path_cost += c3(steps_root_to_objective_amount);
+            }
+            else if (cenary == 4) {
+                path_cost += c4(steps_root_to_objective_amount);
+            }
+        }
+        // Compara se "y" (eixo vertical) mudou
+        else if ((current_coords.second > destination_coords.second) || (current_coords.second < destination_coords.second)) {
+            path_cost += c1();
+        }		        
+    }
+    
+    return path_cost;         
 }
 
 void Graph::breadthFirstSearch(const std::string& u, const std::string& v, size_t cenary) {
@@ -447,41 +480,63 @@ void Graph::depthFirstSearch(const std::string& u, const std::string& v, size_t 
 }
 
 
-/*
-void Graph::uniformCostSearch(size_t u, size_t v, size_t cenary) {
+
+void Graph::uniformCostSearch(const std::string& u, const std::string& v, size_t cenary) {
     std::vector<bool> visited(this->order, false);
+    
+    std::vector<std::string> path;
 
-    std::priority_queue<std::pair<size_t, int>, std::vector<std::pair<size_t, int>>, std::greater<>> queue;
+    using Node = std::pair<size_t, size_t>;
+    std::priority_queue<Node, std::vector<Node>, std::greater<>> priority_queue;
 
-    queue.push({0, u});
+    size_t source { coordinateToVertex(u) };
+    size_t destination { coordinateToVertex(v) };
 
-    while (!queue.empty()) {
-        auto [current_node, current_cost] = queue.top();
-        queue.pop();
+    size_t generated_vertices_amount {0};
+    size_t visited_vertices_amount {0};
+    size_t path_cost {0};
+    size_t steps_root_to_objective_amount {0};
+    size_t new_cost {0};
 
-        if (visited[current_node]) {
-        	continue;
+    priority_queue.push({source, 0});
+
+    while (!priority_queue.empty()) {
+        auto [current_vertex, current_cost] = priority_queue.top();
+        priority_queue.pop();
+
+        if (visited[current_vertex]) {
+            continue;
         }
 
-        visited[current_node] = true;
+        visited[current_vertex] = true;
+        ++visited_vertices_amount;
 
-        if (current_node == v) {
-            std::cout << "Destino alcançado com custo: " << current_cost << '\n';
+        path.push_back(coordinatesToString(vertexToCoordinate(current_vertex)));
+
+        if (current_vertex == destination) {
+            path_cost = current_cost;
+            printStats(coordinatesToString(vertexToCoordinate(source)),
+                       coordinatesToString(vertexToCoordinate(destination)),
+                       path, path_cost, generated_vertices_amount,
+                       visited_vertices_amount);
             return;
         }
 
-        for (const auto& neighbor : getAdjacencyList(current_node)) {
+       for (const auto& neighbor : getAdjacencyList(current_vertex)) {
             if (!visited[neighbor]) {
-                queue.push({neighbor, current_cost + 1});
+                new_cost = current_cost + neighborCost(current_vertex, neighbor, steps_root_to_objective_amount, cenary);
+                priority_queue.push({neighbor, new_cost});
+                ++generated_vertices_amount;
             }
         }
     }
-
-    std::cout << "Nenhum caminho encontrado de " << u << " para " << v << '\n';
 }
 
 
-void Graph::AStar(size_t u, size_t v, size_t cenary) {
+
+/*
+
+void Graph::AStar(const std::string& u, const std::string& v, size_t cenary) {
     std::vector<bool> visited(this->order, false);
     
     std::priority_queue<std::pair<size_t, int>, std::vector<std::pair<size_t, int>>, std::greater<>> queue;
@@ -511,7 +566,7 @@ void Graph::AStar(size_t u, size_t v, size_t cenary) {
 }
 
 
-void Graph::greedySearch(size_t u, size_t v, size_t cenary) {
+void Graph::greedySearch(const std::string& u, const std::string& v, size_t cenary) {
     std::vector<bool> visited(this->order, false);
     std::unordered_map<size_t, int> cost;         
 

@@ -82,6 +82,8 @@ public:
                      size_t& path_cost, size_t steps_root_to_objective_amount,
                      size_t cenary, size_t temp);
                      
+ 	size_t neighborCost(size_t u, size_t v, size_t steps_root_to_objective_amount, size_t cenary);
+                     
    	std::string coordinatesToString(const std::pair<size_t, size_t>& coordinates);
 
 	const std::unordered_map<size_t, std::list<size_t>>& getAdjacencyList() const;

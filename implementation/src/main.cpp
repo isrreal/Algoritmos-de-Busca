@@ -76,6 +76,9 @@ int main(void) {
     std::cout << "\n\n ********* DFS ********* \n";
     graph.depthFirstSearch("(0,0)", "(0,30)", 4);
     
+    std::cout << "\n\n ********* Uniform Search (Dikjstra) ********* \n";
+    graph.uniformCostSearch("(0,0)", "(0,30)", 4);
+    
     return 0;
 }
 
