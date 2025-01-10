@@ -71,10 +71,10 @@ int main(void) {
     Graph graph("graph.txt", cartesian_plane, map_vertices_to_coordinates, map_coordinates_to_vertices, false);
     
     std::cout << "********* BFS ********* \n";
-    graph.breadthFirstSearch(0, 30, 4);
+    graph.breadthFirstSearch("(0,0)", "(0,30)", 4);
     
     std::cout << "\n\n ********* DFS ********* \n";
-    graph.depthFirstSearch(0, 30, 4);
+    graph.depthFirstSearch("(0,0)", "(0,30)", 4);
     
     return 0;
 }

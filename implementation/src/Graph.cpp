@@ -344,10 +344,11 @@ void Graph::cenaryChoose(std::stack<std::pair<size_t, size_t>>& last_visited,
     }         
 }
 
-void Graph::breadthFirstSearch(size_t u, size_t v, size_t cenary) {
+void Graph::breadthFirstSearch(const std::string& u, const std::string& v, size_t cenary) {
     std::vector<bool> visited(this->order, false);
     std::stack<std::pair<size_t, size_t>> last_visited;
-    
+    size_t source { coordinateToVertex(u) };
+    size_t destination { coordinateToVertex(v) };
     std::vector<std::string> path;
     path.reserve(this->order);
     
@@ -359,8 +360,8 @@ void Graph::breadthFirstSearch(size_t u, size_t v, size_t cenary) {
     size_t path_cost {0};
     size_t steps_root_to_objective_amount {0};
    
-    visited[u] = true;
-    queue.push(u);
+    visited[source] = true;
+    queue.push(source);
     
 	
     while (!queue.empty()) {
@@ -376,9 +377,9 @@ void Graph::breadthFirstSearch(size_t u, size_t v, size_t cenary) {
         ++visited_vertices_amount;
         path.push_back(coordinatesToString(vertexToCoordinate(temp))); 
         
-        if (temp == v) {
-            printStats(coordinatesToString(vertexToCoordinate(u)),
-             			coordinatesToString(vertexToCoordinate(v)),
+        if (temp == destination) {
+            printStats(coordinatesToString(vertexToCoordinate(source)),
+             			coordinatesToString(vertexToCoordinate(destination)),
              			path, path_cost, generated_vertices_amount,
              			visited_vertices_amount);
             return;
@@ -391,11 +392,10 @@ void Graph::breadthFirstSearch(size_t u, size_t v, size_t cenary) {
                 ++generated_vertices_amount;
             }
         }
-    }
-    
+    }   
 }
 
-void Graph::depthFirstSearch(size_t u, size_t v, size_t cenary) {
+void Graph::depthFirstSearch(const std::string& u, const std::string& v, size_t cenary) {
     std::vector<bool> visited(this->order, false);
     std::vector<std::string> path;
     std::stack<std::pair<size_t, size_t>> last_visited;
@@ -404,14 +404,16 @@ void Graph::depthFirstSearch(size_t u, size_t v, size_t cenary) {
     
     std::stack<size_t> stack;
     
+    size_t source { coordinateToVertex(u) };
+    size_t destination { coordinateToVertex(v) };
    	size_t temp {0};
     size_t generated_vertices_amount {0};
     size_t visited_vertices_amount {0};
     size_t path_cost {0};
     size_t steps_root_to_objective_amount {0};
     
-    visited[u] = true;
-    stack.push(u);
+    visited[source] = true;
+    stack.push(source);
     
     while (!stack.empty()) {
         temp = stack.top();
@@ -426,11 +428,11 @@ void Graph::depthFirstSearch(size_t u, size_t v, size_t cenary) {
         ++visited_vertices_amount;
         path.push_back(coordinatesToString(vertexToCoordinate(temp)));
 
-        if (temp == v) {
-            printStats(coordinatesToString(vertexToCoordinate(u)),
-            	 	  	coordinatesToString(vertexToCoordinate(v)), 
-            	 	  	path, path_cost, generated_vertices_amount,
-            	 	  	visited_vertices_amount);
+        if (temp == destination) {
+            printStats(coordinatesToString(vertexToCoordinate(source)),
+             			coordinatesToString(vertexToCoordinate(destination)),
+             			path, path_cost, generated_vertices_amount,
+             			visited_vertices_amount);
             return;
         }
         

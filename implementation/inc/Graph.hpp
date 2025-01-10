@@ -92,15 +92,15 @@ public:
     
     bool vertexExists(size_t vertex) const;	
 
-    void breadthFirstSearch(size_t u, size_t v, size_t cenary);  
+    void breadthFirstSearch(const std::string& u, const std::string& v, size_t cenary);  
     
-    void depthFirstSearch(size_t u, size_t v, size_t cenary);  
+    void depthFirstSearch(const std::string& u, const std::string& v, size_t cenary);  
     
-    void uniformCostSearch(size_t u, size_t v, size_t cenary);
+    void uniformCostSearch(const std::string& u, const std::string& v, size_t cenary);
     
-    void AStar(size_t u, size_t v, size_t cenary);
+    void AStar(const std::string& u, const std::string& v, size_t cenary);
     
-    void greedySearch(size_t u, size_t v, size_t cenary);
+    void greedySearch(const std::string& u, const std::string& v, size_t cenary);
     
     void setVertexLabel(size_t vertex, int label);
     
