@@ -178,6 +178,64 @@ bool Graph::edgeExists(size_t u, size_t v) const {
     return std::find(adjacency_list.at(u).begin(), adjacency_list.at(u).end(), v) != adjacency_list.at(u).end();
 }
 
+void Graph::deleteAdjacencyList(size_t vertex) {
+    if (adjacency_list.find(vertex) == adjacency_list.end()) { return; }
+
+    std::queue<size_t> toDelete;
+    toDelete.push(vertex);
+    
+    int currentVertex { -1 };
+
+    for (const auto& it: this->adjacency_list[vertex]) {
+    	toDelete.push(it);
+    }
+
+    while (!toDelete.empty()) {
+        currentVertex = toDelete.front();
+        toDelete.pop();
+
+        for (const auto& it: this->adjacency_list[currentVertex]) {
+        	this->adjacency_list[it].remove(currentVertex);
+       	}
+       	
+       	deleteVertex(currentVertex);
+    }
+}
+
+void Graph::deleteVertex(size_t vertex) {
+    this->size -= this->adjacency_list[vertex].size();
+    this->adjacency_list.erase(vertex);
+    --this->order;
+}
+
+std::ostream& operator<< (std::ostream& os, const Graph& graph) {
+    for (const auto& [u, v] : graph.adjacency_list) {
+        size_t vertex = u;  
+
+        os << vertex << " ----> ";
+        for (const auto& neighbor : v) { 
+            os << neighbor << " ";  
+    	}
+    	
+        os << '\n'; 	
+ 	}
+ 	   
+    return os;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+// Apartir daqui
+
 size_t Graph::heuristic1(int x1, int y1, int x2, int y2) {
 	return 10 * euclideanDistance(x1, y1, x2, y2);
 }
@@ -246,7 +304,7 @@ void Graph::printStats(const std::string& initial_state,
 	 			}
 	 			
  				std::cout << "\nPath cost: " << path_cost << '\n'
-	 			 		  << "Venerated vertices amount: " << generated_vertices_amount << '\n'
+	 			 		  << "Generated vertices amount: " << generated_vertices_amount << '\n'
 	 			 		  << "Visited vertices amount: " << visited_vertices_amount << '\n';
 }
 
@@ -336,7 +394,6 @@ void Graph::breadthFirstSearch(size_t u, size_t v, size_t cenary) {
     }
     
 }
-
 
 void Graph::depthFirstSearch(size_t u, size_t v, size_t cenary) {
     std::vector<bool> visited(this->order, false);
@@ -488,47 +545,3 @@ void Graph::greedySearch(size_t u, size_t v, size_t cenary) {
 }
 
 */
-void Graph::deleteAdjacencyList(size_t vertex) {
-    if (adjacency_list.find(vertex) == adjacency_list.end()) { return; }
-
-    std::queue<size_t> toDelete;
-    toDelete.push(vertex);
-    
-    int currentVertex { -1 };
-
-    for (const auto& it: this->adjacency_list[vertex]) {
-    	toDelete.push(it);
-    }
-
-    while (!toDelete.empty()) {
-        currentVertex = toDelete.front();
-        toDelete.pop();
-
-        for (const auto& it: this->adjacency_list[currentVertex]) {
-        	this->adjacency_list[it].remove(currentVertex);
-       	}
-       	
-       	deleteVertex(currentVertex);
-    }
-}
-
-void Graph::deleteVertex(size_t vertex) {
-    this->size -= this->adjacency_list[vertex].size();
-    this->adjacency_list.erase(vertex);
-    --this->order;
-}
-
-std::ostream& operator<< (std::ostream& os, const Graph& graph) {
-    for (const auto& [u, v] : graph.adjacency_list) {
-        size_t vertex = u;  
-
-        os << vertex << " ----> ";
-        for (const auto& neighbor : v) { 
-            os << neighbor << " ";  
-    	}
-    	
-        os << '\n'; 	
- 	}
- 	   
-    return os;
-}
