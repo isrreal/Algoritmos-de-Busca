@@ -380,25 +380,25 @@ size_t Graph::neighborCost(size_t u, size_t v, size_t steps_root_to_objective_am
 void Graph::breadthFirstSearch(const std::string& u, const std::string& v, size_t cenary) {
     std::vector<bool> visited(this->order, false);
     std::stack<std::pair<size_t, size_t>> last_visited;
-    size_t source { coordinateToVertex(u) };
-    size_t destination { coordinateToVertex(v) };
     std::vector<std::string> path;
     path.reserve(this->order);
     
     std::queue<int> queue;
     
+    size_t source { coordinateToVertex(u) };
+    size_t destination { coordinateToVertex(v) };
     size_t temp {0};
     size_t generated_vertices_amount {0};
     size_t visited_vertices_amount {0};
     size_t path_cost {0};
-    size_t steps_root_to_objective_amount {0};
+    int steps_root_to_objective_amount {-1};
    
     visited[source] = true;
     queue.push(source);
     
-	
     while (!queue.empty()) {
         temp = queue.front();
+        ++steps_root_to_objective_amount;
         
         if (!last_visited.empty()) {
             cenaryChoose(last_visited, path_cost, steps_root_to_objective_amount, cenary, temp);
@@ -443,13 +443,14 @@ void Graph::depthFirstSearch(const std::string& u, const std::string& v, size_t 
     size_t generated_vertices_amount {0};
     size_t visited_vertices_amount {0};
     size_t path_cost {0};
-    size_t steps_root_to_objective_amount {0};
+    int steps_root_to_objective_amount {-1};
     
     visited[source] = true;
     stack.push(source);
     
     while (!stack.empty()) {
         temp = stack.top();
+        ++steps_root_to_objective_amount;
         
         if (!last_visited.empty()) {
             cenaryChoose(last_visited, path_cost, steps_root_to_objective_amount, cenary, temp);
@@ -479,8 +480,6 @@ void Graph::depthFirstSearch(const std::string& u, const std::string& v, size_t 
     }
 }
 
-
-
 void Graph::uniformCostSearch(const std::string& u, const std::string& v, size_t cenary) {
     std::vector<bool> visited(this->order, false);
     
@@ -495,13 +494,15 @@ void Graph::uniformCostSearch(const std::string& u, const std::string& v, size_t
     size_t generated_vertices_amount {0};
     size_t visited_vertices_amount {0};
     size_t path_cost {0};
-    size_t steps_root_to_objective_amount {0};
+    int steps_root_to_objective_amount {-1};
     size_t new_cost {0};
 
     priority_queue.push({source, 0});
 
     while (!priority_queue.empty()) {
         auto [current_vertex, current_cost] = priority_queue.top();
+        ++steps_root_to_objective_amount;
+        
         priority_queue.pop();
 
         if (visited[current_vertex]) {
@@ -532,40 +533,76 @@ void Graph::uniformCostSearch(const std::string& u, const std::string& v, size_t
     }
 }
 
-
-
-/*
-
 void Graph::AStar(const std::string& u, const std::string& v, size_t cenary) {
     std::vector<bool> visited(this->order, false);
-    
-    std::priority_queue<std::pair<size_t, int>, std::vector<std::pair<size_t, int>>, std::greater<>> queue;
-    
-    queue.push({u, 0}); 
+    std::vector<std::string> path;
 
-    while (!queue.empty()) {
-        auto [current_cost, current_node] = queue.top();
-        queue.pop();
+    // Node: {vertex, {cost_with_heuristic, cost_without_heuristic}}
+    using Node = std::pair<size_t, std::pair<size_t, size_t>>;
+    std::priority_queue<Node, std::vector<Node>, std::greater<>> priority_queue;
 
-        visited[current_node] = true;
+    size_t source { coordinateToVertex(u) };
+    size_t destination { coordinateToVertex(v) };
 
-        if (current_node == v) {
-            std::cout << "Destination reached with cost: " << current_cost << '\n';
+    size_t generated_vertices_amount {0};
+    size_t visited_vertices_amount {0};
+    int steps_root_to_objective_amount {-1};
+    size_t path_cost {0};
+    size_t new_cost_with_heuristic {0};
+    size_t acumulated_cost {0};
+
+    priority_queue.push({source, {0, 0}});
+
+    while (!priority_queue.empty()) {
+        auto [current_vertex, costs] = priority_queue.top();
+        auto [cost_with_heuristic, cost_without_heuristic] = costs;
+        
+        ++steps_root_to_objective_amount;
+        
+        priority_queue.pop();
+
+        if (visited[current_vertex]) {
+            continue;
+        }
+
+        visited[current_vertex] = true;
+        ++visited_vertices_amount;
+
+        path.push_back(coordinatesToString(vertexToCoordinate(current_vertex)));
+
+        if (current_vertex == destination) {
+            path_cost = cost_without_heuristic; 
+            printStats(
+                coordinatesToString(vertexToCoordinate(source)),
+                coordinatesToString(vertexToCoordinate(destination)),
+                path,
+                path_cost,
+                generated_vertices_amount,
+                visited_vertices_amount
+            );
+            
             return;
         }
-        
-        for (const auto& [neighbor, edge_cost] : getAdjacencyList(current_node)) {
+
+        for (const auto& neighbor : getAdjacencyList(current_vertex)) {
             if (!visited[neighbor]) {
-                int newCost = current_cost + edge_cost; //+ heuristic1(u, v);
-                queue.push({newCost, neighbor});
+                acumulated_cost = 
+                    cost_without_heuristic + neighborCost(current_vertex, neighbor, steps_root_to_objective_amount, cenary);
+
+                new_cost_with_heuristic = 
+                    acumulated_cost + euclideanDistance(
+                        vertexToCoordinate(neighbor).first, vertexToCoordinate(neighbor).second,
+                        vertexToCoordinate(destination).first, vertexToCoordinate(destination).second
+                    );
+
+                priority_queue.push({neighbor, {new_cost_with_heuristic, acumulated_cost}});
+                ++generated_vertices_amount;
             }
         }
     }
-
-    std::cout << "No path found from " << u << " to " << v << '\n';
 }
 
-
+/*
 void Graph::greedySearch(const std::string& u, const std::string& v, size_t cenary) {
     std::vector<bool> visited(this->order, false);
     std::unordered_map<size_t, int> cost;         
