@@ -49,13 +49,13 @@ void buildGraphFile() {
 
             current_coordenate = coordinateToString(x, y);
             
-            if (x + 1 < 31) {
+            if ((x + 1) < 31) {
                 neighbor_down = coordinateToString(x + 1, y);
                 graph_edges << map_coordinates_to_vertices[current_coordenate] << " " 
                             << map_coordinates_to_vertices[neighbor_down] << '\n';
             }
             
-            if (y + 1 < 31) {
+            if ((y + 1) < 31) {
                 neighbor_right = coordinateToString(x, y + 1);
                 graph_edges << map_coordinates_to_vertices[current_coordenate] << " " 
                             << map_coordinates_to_vertices[neighbor_right] << '\n';
@@ -71,16 +71,16 @@ int main(void) {
     Graph graph("graph.txt", cartesian_plane, map_vertices_to_coordinates, map_coordinates_to_vertices, false);
     
     std::cout << "********* BFS ********* \n";
-    graph.breadthFirstSearch("(0,0)", "(5,30)", 4);
+    graph.breadthFirstSearch("(6,10)", "(5,30)", 4);
     
     std::cout << "\n\n ********* DFS ********* \n";
-    graph.depthFirstSearch("(0,0)", "(5,30)", 4);
+    graph.depthFirstSearch("(6,10)", "(5,30)", 4);
     
     std::cout << "\n\n ********* Uniform Search (Dikjstra) ********* \n";
-    graph.uniformCostSearch("(0,0)", "(5,30)", 4);
+    graph.uniformCostSearch("(6,10)", "(5,30)", 4);
     
     std::cout << "\n\n ********* A* ********* \n";
-    graph.AStar("(0,0)", "(5,30)", 4);
+    graph.AStar("(6,10)", "(5,30)", 4);
     return 0;
 }
 
