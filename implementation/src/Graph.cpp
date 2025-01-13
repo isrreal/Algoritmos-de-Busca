@@ -519,21 +519,8 @@ void Graph::uniformCostSearch(const std::string& u, const std::string& v, size_t
         
         visited[current_vertex] = true;
         ++visited_vertices_amount;
-
-        for (const auto& neighbor : getAdjacencyList(current_vertex)) {
-            if (!visited[neighbor]) {
-                new_cost = current_cost + neighborCost(current_vertex, neighbor, steps_root_to_objective_amount, cenary);
-                priority_queue.push({neighbor, new_cost});
-                ++generated_vertices_amount;
-                
-                // Armazenar o predecessor para reconstrução do caminho.
-                if (predecessor[neighbor] == -1) {
-                    predecessor[neighbor] = current_vertex;
-                }
-            }
-        }
-
-        if (current_vertex == destination) {
+		
+		if (current_vertex == destination) {
             path_cost = current_cost;
             
             size_t current = destination;
@@ -552,6 +539,19 @@ void Graph::uniformCostSearch(const std::string& u, const std::string& v, size_t
                        path, path_cost, generated_vertices_amount,
                        visited_vertices_amount);
             return;
+        }
+        
+        for (const auto& neighbor : getAdjacencyList(current_vertex)) {
+            if (!visited[neighbor]) {
+                new_cost = current_cost + neighborCost(current_vertex, neighbor, steps_root_to_objective_amount, cenary);
+                priority_queue.push({neighbor, new_cost});
+                ++generated_vertices_amount;
+                
+                // Armazenar o predecessor para reconstrução do caminho.
+                if (predecessor[neighbor] == -1) {
+                    predecessor[neighbor] = current_vertex;
+                }
+            }
         }
     }
 }
@@ -591,27 +591,7 @@ void Graph::AStar(const std::string& u, const std::string& v, size_t cenary) {
         
 		visited[current_vertex] = true;
         ++visited_vertices_amount;
-
-        for (const auto& neighbor : getAdjacencyList(current_vertex)) {
-            if (!visited[neighbor]) {
-                acumulated_cost = cost_without_heuristic + neighborCost(current_vertex, neighbor, steps_root_to_objective_amount, cenary);
-
-                new_cost_with_heuristic = 
-                    acumulated_cost + euclideanDistance(
-                        vertexToCoordinate(neighbor).first, vertexToCoordinate(neighbor).second,
-                        vertexToCoordinate(destination).first, vertexToCoordinate(destination).second
-                    );
-
-                priority_queue.push({neighbor, {new_cost_with_heuristic, acumulated_cost}});
-                ++generated_vertices_amount;
-
-                // Armazenar o predecessor para reconstrução do caminho.
-                if (predecessor[neighbor] == -1) {
-                    predecessor[neighbor] = current_vertex;
-                }
-            }
-        }
-
+        
         if (current_vertex == destination) {
             path_cost = cost_without_heuristic;
             
@@ -637,6 +617,26 @@ void Graph::AStar(const std::string& u, const std::string& v, size_t cenary) {
                 visited_vertices_amount
             );
             return;
+        }
+
+        for (const auto& neighbor : getAdjacencyList(current_vertex)) {
+            if (!visited[neighbor]) {
+                acumulated_cost = cost_without_heuristic + neighborCost(current_vertex, neighbor, steps_root_to_objective_amount, cenary);
+
+                new_cost_with_heuristic = 
+                    acumulated_cost + euclideanDistance(
+                        vertexToCoordinate(neighbor).first, vertexToCoordinate(neighbor).second,
+                        vertexToCoordinate(destination).first, vertexToCoordinate(destination).second
+                    );
+
+                priority_queue.push({neighbor, {new_cost_with_heuristic, acumulated_cost}});
+                ++generated_vertices_amount;
+
+                // Armazenar o predecessor para reconstrução do caminho.
+                if (predecessor[neighbor] == -1) {
+                    predecessor[neighbor] = current_vertex;
+                }
+            }
         }
     }
 }
@@ -677,27 +677,7 @@ void Graph::greedySearch(const std::string& u, const std::string& v, size_t cena
         
 		visited[current_vertex] = true;
         ++visited_vertices_amount;
-
-        for (const auto& neighbor : getAdjacencyList(current_vertex)) {
-            if (!visited[neighbor]) {
-                acumulated_cost = cost_without_heuristic + neighborCost(current_vertex, neighbor, steps_root_to_objective_amount, cenary);
-
-                new_cost_with_heuristic = 
-                     	euclideanDistance(
-                        vertexToCoordinate(neighbor).first, vertexToCoordinate(neighbor).second,
-                        vertexToCoordinate(destination).first, vertexToCoordinate(destination).second
-                    );
-
-                priority_queue.push({neighbor, {new_cost_with_heuristic, acumulated_cost}});
-                ++generated_vertices_amount;
-
-                // Armazenar o predecessor para reconstrução do caminho.
-                if (predecessor[neighbor] == -1) {
-                    predecessor[neighbor] = current_vertex;
-                }
-            }
-        }
-
+        
         if (current_vertex == destination) {
             path_cost = cost_without_heuristic;
 
@@ -724,6 +704,26 @@ void Graph::greedySearch(const std::string& u, const std::string& v, size_t cena
             );
             
             return;
+        }
+
+        for (const auto& neighbor : getAdjacencyList(current_vertex)) {
+            if (!visited[neighbor]) {
+                acumulated_cost = cost_without_heuristic + neighborCost(current_vertex, neighbor, steps_root_to_objective_amount, cenary);
+
+                new_cost_with_heuristic = 
+                     	euclideanDistance(
+                        vertexToCoordinate(neighbor).first, vertexToCoordinate(neighbor).second,
+                        vertexToCoordinate(destination).first, vertexToCoordinate(destination).second
+                    );
+
+                priority_queue.push({neighbor, {new_cost_with_heuristic, acumulated_cost}});
+                ++generated_vertices_amount;
+
+                // Armazenar o predecessor para reconstrução do caminho.
+                if (predecessor[neighbor] == -1) {
+                    predecessor[neighbor] = current_vertex;
+                }
+            }
         }
     }
 }
