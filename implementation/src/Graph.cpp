@@ -398,6 +398,7 @@ void Graph::breadthFirstSearch(const std::string& u, const std::string& v, size_
     
     while (!queue.empty()) {
         temp = queue.front();
+        
         ++steps_root_to_objective_amount;
         
         if (!last_visited.empty()) {
@@ -449,16 +450,22 @@ void Graph::depthFirstSearch(const std::string& u, const std::string& v, size_t 
     
     while (!stack.empty()) {
         temp = stack.top();
+        stack.pop();
+        
+        if (visited[temp]) {
+            continue;
+        }
+        
         visited[temp] = true;
         
         ++steps_root_to_objective_amount;
         
-        if (!last_visited.empty()) {
-            cenaryChoose(last_visited, path_cost, steps_root_to_objective_amount, cenary, temp);
+       	if (!last_visited.empty()) {
+	        cenaryChoose(last_visited, path_cost, steps_root_to_objective_amount, cenary, temp);
         }
 		
         last_visited.push(vertexToCoordinate(temp));
-        stack.pop();
+
         
         ++visited_vertices_amount;
         path.push_back(coordinatesToString(vertexToCoordinate(temp)));
@@ -549,7 +556,6 @@ void Graph::uniformCostSearch(const std::string& u, const std::string& v, size_t
     }
 }
 
-
 void Graph::AStar(const std::string& u, const std::string& v, size_t cenary) {
     std::vector<bool> visited(this->order, false);
     std::vector<int> predecessor(this->order, -1);
@@ -636,40 +642,88 @@ void Graph::AStar(const std::string& u, const std::string& v, size_t cenary) {
 }
 
 
-/*
 void Graph::greedySearch(const std::string& u, const std::string& v, size_t cenary) {
     std::vector<bool> visited(this->order, false);
-    std::unordered_map<size_t, int> cost;         
+    std::vector<int> predecessor(this->order, -1);
+    std::vector<std::string> path;
 
-    queue.push({0, u}); 
-    cost[u] = 0;
+    // Node: {vertex, {cost_with_heuristic, cost_without_heuristic}}
+    using Node = std::pair<size_t, std::pair<size_t, size_t>>;
+    std::priority_queue<Node, std::vector<Node>, std::greater<>> priority_queue;
 
-    while (!queue.empty()) {
-        auto [currentCost, currentNode] = queue.top();
-        queue.pop();
+    size_t source { coordinateToVertex(u) };
+    size_t destination { coordinateToVertex(v) };
 
-        if (visited[currentNode]) { continue; };
+    size_t generated_vertices_amount {0};
+    size_t visited_vertices_amount {0};
+    int steps_root_to_objective_amount {-1};
+    size_t path_cost {0};
+    size_t new_cost_with_heuristic {0};
+    size_t acumulated_cost {0};
 
-        visited[currentNode] = true;
+    priority_queue.push({source, {0, 0}});
 
-        if (currentNode == v) {
-            std::cout << "Destination reached with cost: " << currentCost << '\n';
-            return;
+    while (!priority_queue.empty()) {
+        auto [current_vertex, costs] = priority_queue.top();
+        auto [cost_with_heuristic, cost_without_heuristic] = costs;
+      
+        priority_queue.pop();
+
+        if (visited[current_vertex]) {
+            continue;
         }
+		
+        ++steps_root_to_objective_amount;
+        
+		visited[current_vertex] = true;
+        ++visited_vertices_amount;
 
-        for (const auto& [neighbor, edgeCost] : getAdjacencyList(currentNode)) {
+        for (const auto& neighbor : getAdjacencyList(current_vertex)) {
             if (!visited[neighbor]) {
-                int newCost = currentCost + edgeCost;
+                acumulated_cost = cost_without_heuristic + neighborCost(current_vertex, neighbor, steps_root_to_objective_amount, cenary);
 
-                if (cost.find(neighbor) == cost.end() || newCost < cost[neighbor]) {
-                    cost[neighbor] = newCost;
-                    queue.push({newCost, neighbor});
+                new_cost_with_heuristic = 
+                     	euclideanDistance(
+                        vertexToCoordinate(neighbor).first, vertexToCoordinate(neighbor).second,
+                        vertexToCoordinate(destination).first, vertexToCoordinate(destination).second
+                    );
+
+                priority_queue.push({neighbor, {new_cost_with_heuristic, acumulated_cost}});
+                ++generated_vertices_amount;
+
+                // Armazenar o predecessor para reconstrução do caminho.
+                if (predecessor[neighbor] == -1) {
+                    predecessor[neighbor] = current_vertex;
                 }
             }
         }
+
+        if (current_vertex == destination) {
+            path_cost = cost_without_heuristic;
+
+            // Reconstrução do caminho a partir do destino
+            size_t current = destination;
+            
+            while (current != source) {
+                path.push_back(coordinatesToString(vertexToCoordinate(current)));
+                current = predecessor[current];
+            }
+            
+            path.push_back(coordinatesToString(vertexToCoordinate(source)));
+
+            // Inverter o caminho para que ele fique da origem até o destino
+            std::reverse(path.begin(), path.end());
+
+            printStats(
+                coordinatesToString(vertexToCoordinate(source)),
+                coordinatesToString(vertexToCoordinate(destination)),
+                path,
+                path_cost,
+                generated_vertices_amount,
+                visited_vertices_amount
+            );
+            
+            return;
+        }
     }
-
-    std::cout << "No path found from " << u << " to " << v << '\n';
 }
-
-*/
