@@ -71,19 +71,19 @@ int main(void) {
     Graph graph("graph.txt", cartesian_plane, map_vertices_to_coordinates, map_coordinates_to_vertices, false);
     
     std::cout << "********* BFS ********* \n";
-    graph.breadthFirstSearch("(5,1)", "(0,0)", 4);
+    graph.breadthFirstSearch("(5,1)", "(0,0)", 3);
     
     std::cout << "\n\n ********* DFS ********* \n";
-    graph.depthFirstSearch("(5,1)", "(0,0)", 4);
+    graph.depthFirstSearch("(5,1)", "(0,0)", 3);
     
     std::cout << "\n\n ********* Uniform Search (Dijkstra) ********* \n";
-    graph.uniformCostSearch("(5,1)", "(0,0)", 4);
+    graph.uniformCostSearch("(5,1)", "(0,0)", 3);
     
     std::cout << "\n\n ********* A* ********* \n";
-    graph.AStar("(5,1)", "(0,0)", 4);
+    graph.AStar("(5,1)", "(0,0)", 3);
     
     std::cout << "\n\n ********* Greedy Search ********* \n";
-    graph.greedySearch("(5,1)", "(0,0)", 4);
+    graph.greedySearch("(5,1)", "(0,0)", 3);
     return 0;
 }
 
