@@ -106,6 +106,7 @@ int main(void) {
     
     std::cout << "\n\n ********* Greedy Search ********* \n";
     graph.greedySearch(x_source, y_source, 3);
+   
     return 0;
 }
 

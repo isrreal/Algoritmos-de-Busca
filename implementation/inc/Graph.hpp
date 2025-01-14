@@ -78,9 +78,8 @@ public:
  				   size_t generated_vertices_amount,
  				   size_t visited_vertices_amount);
  				   
-   	void cenaryChoose(std::stack<std::pair<size_t, size_t>>& last_visited,
-                     size_t& path_cost, size_t steps_root_to_objective_amount,
-                     size_t cenary, size_t temp);
+   	size_t pathCompute(std::stack<std::pair<size_t, size_t>>& last_visited,
+                         size_t path_cost, size_t steps_root_to_objective_amount, size_t cenary, size_t temp);
                      
  	size_t neighborCost(size_t u, size_t v, size_t steps_root_to_objective_amount, size_t cenary);
                      
