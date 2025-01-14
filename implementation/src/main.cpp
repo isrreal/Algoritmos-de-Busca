@@ -69,6 +69,12 @@ void buildGraphFile() {
     graph_edges.close();
 }
 
+void parte1();
+void parte2();
+void parte3();
+void parte4();
+void parte5();
+
 int main(void) {
 
 	// instanciações necessárias para gerar o número pseudo-aleatório
@@ -91,22 +97,22 @@ int main(void) {
 	
 	x_destination = graph.coordinatesToString(graph.vertexToCoordinate(gap(seed)));
 	y_destination = graph.coordinatesToString(graph.vertexToCoordinate(gap(seed)));
-    
-    std::cout << "********* BFS ********* \n";
-    graph.breadthFirstSearch(x_source, y_source, 3);
+	
+	std::cout << "********* BFS ********* \n";
+    graph.breadthFirstSearch(x_source, y_destination, 3);
     
     std::cout << "\n\n ********* DFS ********* \n";
-    graph.depthFirstSearch(x_source, y_source, 3);
+    graph.depthFirstSearch(x_source, y_destination, 3);
     
     std::cout << "\n\n ********* Uniform Search (Dijkstra) ********* \n";
-    graph.uniformCostSearch(x_source, y_source, 3);
+    graph.uniformCostSearch(x_source, y_destination, 3);
     
     std::cout << "\n\n ********* A* ********* \n";
-    graph.AStar(x_source, y_source, 3);
+    graph.AStar(x_source, y_destination, 3);
     
     std::cout << "\n\n ********* Greedy Search ********* \n";
-    graph.greedySearch(x_source, y_source, 3);
-   
+    graph.greedySearch(x_source, y_destination, 3);
+    
     return 0;
 }
 

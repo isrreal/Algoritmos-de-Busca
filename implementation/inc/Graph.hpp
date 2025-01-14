@@ -7,6 +7,7 @@
 #include <list>
 #include <stack>
 #include <unordered_map>
+#include <unordered_set>
 #include <queue>
 #include <sstream>
 #include <fstream>
@@ -71,7 +72,7 @@ public:
 	size_t c3(size_t steps);
 	size_t c4(size_t steps);
 	
-	void printStats(const std::string& initial_state,
+	std::string getStats(const std::string& initial_state,
 				   const std::string& search_objective,
  				   const std::vector<std::string>& path,
  			       size_t path_cost,
@@ -82,7 +83,9 @@ public:
                          size_t path_cost, size_t steps_root_to_objective_amount, size_t cenary, size_t temp);
                      
  	size_t neighborCost(size_t u, size_t v, size_t steps_root_to_objective_amount, size_t cenary);
-                     
+ 	
+ 	std::vector<std::string> reconstructPath(size_t source, size_t destination, const std::vector<int>& predecessor);
+              
    	std::string coordinatesToString(const std::pair<size_t, size_t>& coordinates);
 
 	const std::unordered_map<size_t, std::list<size_t>>& getAdjacencyList() const;
@@ -93,15 +96,15 @@ public:
     
     bool vertexExists(size_t vertex) const;	
 
-    void breadthFirstSearch(const std::string& u, const std::string& v, size_t cenary);  
+    std::string breadthFirstSearch(const std::string& u, const std::string& v, size_t cenary);  
     
-    void depthFirstSearch(const std::string& u, const std::string& v, size_t cenary);  
+    std::string depthFirstSearch(const std::string& u, const std::string& v, size_t cenary);  
     
-    void uniformCostSearch(const std::string& u, const std::string& v, size_t cenary);
+    std::string uniformCostSearch(const std::string& u, const std::string& v, size_t cenary);
     
-    void AStar(const std::string& u, const std::string& v, size_t cenary);
+    std::string AStar(const std::string& u, const std::string& v, size_t cenary);
     
-    void greedySearch(const std::string& u, const std::string& v, size_t cenary);
+	std::string greedySearch(const std::string& u, const std::string& v, size_t cenary);
     
     void setVertexLabel(size_t vertex, int label);
     
