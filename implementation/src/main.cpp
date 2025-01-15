@@ -83,39 +83,53 @@ int main(void) {
 	std::mt19937 seed(random_number());
 	std::uniform_int_distribution<size_t> gap(0, COORDINATES_AMOUNT - 1);
 	
-	std::string x_source {};
-	std::string y_source {};
-	std::string x_destination {};
-	std::string y_destination {};
+	std::string source {};
+	std::string destination {};
 		
     buildGraphFile();
     
     Graph graph("graph.txt", cartesian_plane, map_vertices_to_coordinates, map_coordinates_to_vertices, false);
     
-    x_source = graph.coordinatesToString(graph.vertexToCoordinate(gap(seed)));
-	y_source = graph.coordinatesToString(graph.vertexToCoordinate(gap(seed)));
+    source = graph.coordinatesToString(graph.vertexToCoordinate(gap(seed)));
+	destination = graph.coordinatesToString(graph.vertexToCoordinate(gap(seed)));
 	
-	x_destination = graph.coordinatesToString(graph.vertexToCoordinate(gap(seed)));
-	y_destination = graph.coordinatesToString(graph.vertexToCoordinate(gap(seed)));
-	
+	/*
 	std::cout << "********* BFS ********* \n";
-    graph.breadthFirstSearch(x_source, y_destination, 3);
+    graph.breadthFirstSearch(source, destination, 4);
     
     std::cout << "\n\n ********* DFS ********* \n";
-    graph.depthFirstSearch(x_source, y_destination, 3);
+    graph.depthFirstSearch(source, destination, 4);
+	
+	std::cout << "\n\n ********* A* ********* \n";
+    graph.AStar(source, destination, 4);
     
-    
-    std::cout << "\n\n ********* A* ********* \n";
-    graph.AStar(x_source, y_destination, 3);
-    
-    
-
     std::cout << "\n\n ********* Uniform Search (Dijkstra) ********* \n";
-    graph.uniformCostSearch(x_source, y_destination, 3);
+	graph.uniformCostSearch(source, destination, 4);
+	
+	std::cout << "\n\n ********* Greedy Search ********* \n";
+    graph.greedySearch(source, destination, 4);
+    
     
     std::cout << "\n\n ********* Greedy Search ********* \n";
-    graph.greedySearch(x_source, y_destination, 3);
+    graph.greedySearch(source, destination, 4);
     
+    */
+	
+	std::cout << "********* BFS ********* \n";
+    graph.breadthFirstSearch("(0,0)", "(15,30)", 4);
+    
+    std::cout << "\n\n ********* DFS ********* \n";
+    graph.depthFirstSearch("(0,0)", "(15,30)", 4);
+    
+	std::cout << "\n\n ********* A* ********* \n";
+    graph.AStar("(0,0)", "(15,30)", 4);
+	
+    std::cout << "\n\n ********* Uniform Search (Dijkstra) ********* \n";
+	graph.uniformCostSearch("(0,0)", "(15,30)", 4);
+    
+    std::cout << "\n\n ********* Greedy Search ********* \n";
+    graph.greedySearch("(0,0)", "(15,30)", 4);
+   
     return 0;
 }
 

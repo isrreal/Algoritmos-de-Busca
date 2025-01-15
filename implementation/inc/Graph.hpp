@@ -12,6 +12,7 @@
 #include <sstream>
 #include <fstream>
 #include "Node.hpp"
+#include <memory>
 
 class Graph {
 private:
@@ -55,17 +56,12 @@ public:
 	
 	std::pair<size_t, size_t> vertexToCoordinate(size_t vertex) const;
     
-    size_t heuristic1(int x1, int y1, int x2, int y2);
+    double heuristic1(int x1, int y1, int x2, int y2);
 	size_t heuristic2(int x1, int y1, int x2, int y2);
 
-	size_t euclideanDistance(int x1, int y1, int x2, int y2);
+	double euclideanDistance(int x1, int y1, int x2, int y2);
 	size_t manhatannDistance(int x1, int y1, int x2, int y2);
 	
-	std::string f1(size_t x, size_t y);
-	std::string f2(size_t x, size_t y);
-	std::string f3(size_t x, size_t y);
-	std::string f4(size_t x, size_t y);
-
 	constexpr size_t c1();
 	constexpr size_t c2();
 	size_t c3(size_t steps);
@@ -83,8 +79,8 @@ public:
                      
  	size_t neighborCost(size_t u, size_t v, size_t steps_root_to_objective_amount, size_t cenary);
  	
- 	std::vector<std::string> reconstructPath(size_t source, size_t destination, const std::vector<int>& predecessor);
-              
+	std::vector<std::string> buildPath(size_t source, size_t destination, const std::vector<int>& predecessor);
+ 	
    	std::string coordinatesToString(const std::pair<size_t, size_t>& coordinates);
 
 	const std::unordered_map<size_t, std::list<size_t>>& getAdjacencyList() const;
