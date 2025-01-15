@@ -1,45 +1,5 @@
 #include "Graph.hpp"
 
-Graph::Graph(size_t order, bool isDirected, float probabilityOfEdge): 
-	order(order), size(0), isDirected(isDirected), delta(0), Delta(0) {
-
-    size_t connectedVertex {0};
-    float probability {0.0};
-
-    std::random_device randomNumber;
-    std::mt19937 seed(randomNumber());
-    std::uniform_int_distribution<int> gap(0, order - 1);
-    std::uniform_real_distribution<float> probabilityGap(0.0, 1.0);
-
-    for (size_t i {0}; i < order; ++i) {
-        adjacency_list[i] = {};
-    }
-
-    for (size_t i {0}; i < order; ++i) {
-        connectedVertex = gap(seed);
-
-        while (i == connectedVertex) {
-            connectedVertex = gap(seed);
-		}
-		
-        if (!edgeExists(i, connectedVertex)) {
-            addEdge(i, connectedVertex);
-        }
-
-        for (size_t j {i + 1}; j < order; ++j) {
-            if (!edgeExists(i, j)) {
-                probability = probabilityGap(seed);
-                if (probabilityOfEdge >= probability) {
-                    addEdge(i, j);
-                }
-           }
-        }
-    }
-    
-    delta = computeMinVertexDegree();
-    Delta = computeMaxVertexDegree();
-}
-
 Graph::Graph(const std::string& filename, 
 		  const std::vector<std::vector<std::string>>& cartesian_plane, 
 		  const std::unordered_map<size_t, std::string>& map_vertices_to_coordinates,
@@ -152,7 +112,7 @@ std::pair<size_t, size_t> Graph::vertexToCoordinate(size_t vertex) const {
     
     std::istringstream iss(clean_str);
     std::string x_str, y_str;
-    std::getline(iss, x_str, ',');
+    std::getline(iss, x_str, ' ');
     std::getline(iss, y_str);
     
     int x = std::stoi(x_str);
@@ -238,26 +198,23 @@ std::string Graph::getStats(const std::string& initial_state,
 	 			       size_t path_cost,
 	 				   size_t generated_vertices_amount,
 	 				   size_t visited_vertices_amount) {
-	 			
-	 			std::cout << "Initial state: " << initial_state << '\n'
-	 					  << "Search objective: " << search_objective << '\n'
-	 					  << "Path coordenates: " << '\n';
-	 					  
-	 			for (const auto& coordenate: path) {
-	 				std::cout << coordenate << ' ';
-	 			}
-	 			
- 				std::cout << "\nPath cost: " << path_cost << '\n'
-	 			 		  << "Generated vertices amount: " << generated_vertices_amount << '\n'
-	 			 		  << "Visited vertices amount: " << visited_vertices_amount << '\n';
-	return "string";
+	
+	std::string coordinates {};
+	
+	for (const auto& it : path) {
+		coordinates += it + ' ';
+	}  
+	
+	return initial_state + "," + search_objective + "," + 
+	 	   std::to_string(generated_vertices_amount) + "," +
+	 	   std::to_string(visited_vertices_amount) + "," + std::to_string(path_cost) + "," + coordinates;
 }
 
 std::string Graph::coordinatesToString(const std::pair<size_t, size_t>& coordinates) {
 	auto x = coordinates.first;
 	auto y = coordinates.second;
 	
-	return "(" + std::to_string(x) + "," + std::to_string(y) + ")";
+	return "(" + std::to_string(x) + " " + std::to_string(y) + ")";
 }
 
 size_t Graph::neighborCost(size_t u, size_t v, size_t steps_root_to_objective_amount, size_t cenary) {
@@ -307,7 +264,7 @@ std::vector<std::string> Graph::buildPath(size_t source, size_t destination, con
     return path;
 }
 
-std::string Graph::breadthFirstSearch(const std::string& u, const std::string& v, size_t cenary) {
+std::string Graph::breadthFirstSearch(const std::string& u, const std::string& v, size_t cenary, bool randomize) {
     std::unordered_set<size_t> visited; 
     std::vector<int> predecessor(this->order, -1);
     std::queue<Node> queue;
@@ -360,13 +317,38 @@ std::string Graph::breadthFirstSearch(const std::string& u, const std::string& v
                 ++generated_vertices_amount;
             }
         }
+        
+          // Armazena os vizinhos em um vetor
+        
+
+        // Embaralha os vizinhos se randomize estiver ativo
+		if (randomize) {
+			std::random_device rd;
+			std::mt19937 gen(rd());
+			
+			// Extrai os elementos da fila para um vetor temporário
+			std::vector<Node> neighbors;
+			
+			while (!queue.empty()) {
+				neighbors.push_back(queue.front());
+				queue.pop();
+			}
+			
+			// Embaralha os elementos no vetor
+			std::shuffle(neighbors.begin(), neighbors.end(), gen);
+			
+			// Reconstrói a fila com a ordem embaralhada
+			for (const auto& neighbor : neighbors) {
+				queue.push(neighbor);
+			}
+		}
     }
 
     // Caso o destino não seja alcançável
     return "Destination not reachable from source.\n";
 }
 
-std::string Graph::depthFirstSearch(const std::string& u, const std::string& v, size_t cenary) {
+std::string Graph::depthFirstSearch(const std::string& u, const std::string& v, size_t cenary, bool randomize) {
     std::unordered_set<size_t> visited;  
     std::vector<int> predecessor(this->order, -1);  
     std::stack<Node> stack;
@@ -423,6 +405,27 @@ std::string Graph::depthFirstSearch(const std::string& u, const std::string& v, 
                 ++generated_vertices_amount;
             }
         }
+        
+        if (randomize) {
+			std::random_device rd;
+			std::mt19937 gen(rd());
+			
+			// Extrai os elementos da fila para um vetor temporário
+			std::vector<Node> neighbors;
+			
+			while (!stack.empty()) {
+				neighbors.push_back(stack.top());
+				stack.pop();
+			}
+			
+			// Embaralha os elementos no vetor
+			std::shuffle(neighbors.begin(), neighbors.end(), gen);
+			
+			// Reconstrói a fila com a ordem embaralhada
+			for (const auto& neighbor : neighbors) {
+				stack.push(neighbor);
+			}
+		}
     }
 
     // Caso o destino não seja alcançável
@@ -430,7 +433,7 @@ std::string Graph::depthFirstSearch(const std::string& u, const std::string& v, 
 }
 
 
-std::string Graph::AStar(const std::string& u, const std::string& v, size_t cenary) {
+std::pair<std::string, size_t> Graph::AStar(const std::string& u, const std::string& v, size_t cenary) {
     std::unordered_map<size_t, size_t> cost_map; // Armazena f(n) = g(n) + h(n)
     std::priority_queue<Node, std::vector<Node>, std::greater<>> priority_queue;
     std::vector<std::string> path;
@@ -460,14 +463,16 @@ std::string Graph::AStar(const std::string& u, const std::string& v, size_t cena
             path = buildPath(source, destination, predecessor);
             
             // Exibe as estatísticas
-            return getStats(
-                coordinatesToString(vertexToCoordinate(source)),
-                coordinatesToString(vertexToCoordinate(destination)),
-                path,
-                current_node.path_cost,
-                generated_vertices_amount,
-                visited_vertices_amount
-            );
+            return std::make_pair(
+    getStats(
+        coordinatesToString(vertexToCoordinate(source)),
+        coordinatesToString(vertexToCoordinate(destination)),
+        path,
+        current_node.path_cost,
+        generated_vertices_amount,
+        visited_vertices_amount),
+    current_node.path_cost);
+
         }
 
         // Verifica os vizinhos do vértice atual
@@ -499,7 +504,7 @@ std::string Graph::AStar(const std::string& u, const std::string& v, size_t cena
     }
 
     // Caso o destino não seja alcançável
-    return "Destination not reachable from source.\n";
+    return std::make_pair<std::string, size_t>("Destination not reachable from source.\n", 0);
 }
 
 

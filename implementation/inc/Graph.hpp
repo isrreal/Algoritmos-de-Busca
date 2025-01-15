@@ -35,7 +35,6 @@ private:
     size_t computeMinVertexDegree();
     
 public:	
-	Graph(size_t order, bool isDirected, float probabilityOfEdge);	
     Graph(const std::string& filename, 
 		  const std::vector<std::vector<std::string>>& cartesian_plane, 
 		  const std::unordered_map<size_t, std::string>& map_vertices_to_coordinates,
@@ -91,13 +90,13 @@ public:
     
     bool vertexExists(size_t vertex) const;	
 
-    std::string breadthFirstSearch(const std::string& u, const std::string& v, size_t cenary);  
+    std::string breadthFirstSearch(const std::string& u, const std::string& v, size_t cenary, bool randomize = false);  
     
-    std::string depthFirstSearch(const std::string& u, const std::string& v, size_t cenary);  
+    std::string depthFirstSearch(const std::string& u, const std::string& v, size_t cenary, bool randomize = false);  
     
     std::string uniformCostSearch(const std::string& u, const std::string& v, size_t cenary);
     
-    std::string AStar(const std::string& u, const std::string& v, size_t cenary);
+    std::pair<std::string, size_t> AStar(const std::string& u, const std::string& v, size_t cenary);
     
 	std::string greedySearch(const std::string& u, const std::string& v, size_t cenary);
     

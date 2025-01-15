@@ -22,7 +22,7 @@ void buildMatrix() {
 
     for (size_t x {0}; x < 31; ++x) {
         for (size_t y {0}; y < 31; ++y) {
-            coordenate = "(" + std::to_string(x) + "," + std::to_string(y) + ")";
+            coordenate = "(" + std::to_string(x) + " " + std::to_string(y) + ")";
             map_vertices_to_coordinates[vertex] = coordenate;
             map_coordinates_to_vertices[coordenate] = vertex++;
             cartesian_plane[x][y] = coordenate;
@@ -31,7 +31,7 @@ void buildMatrix() {
 }
 
 std::string coordinateToString(size_t x, size_t y) {
-    return "(" + std::to_string(x) + "," + std::to_string(y) + ")";
+    return "(" + std::to_string(x) + " " + std::to_string(y) + ")";
 }
 
 void buildGraphFile() {
@@ -69,11 +69,111 @@ void buildGraphFile() {
     graph_edges.close();
 }
 
-void parte1();
-void parte2();
-void parte3();
-void parte4();
-void parte5();
+void generateColumns(std::ofstream& file) {
+    file << "iteration,algorithm,initial state,search objective,generated vertices amount,visited vertices amount,path cost,path coordinates\n";
+}
+
+void part1(const std::string& source, const std::string& destination, Graph& graph, size_t cenary) {
+    std::ofstream generalCSV("part1-results-cost" + std::to_string(cenary) + ".csv");
+    
+    if (generalCSV.is_open()) {
+        generateColumns(generalCSV);
+
+        for (size_t i {0}; i < 50; ++i) {
+ 
+            generalCSV << i << ",BFS," << graph.breadthFirstSearch(source, destination, cenary) << '\n';
+
+            generalCSV << i << ",DFS," << graph.depthFirstSearch(source, destination, cenary) << '\n';
+
+            generalCSV << i << ",UCS," << graph.uniformCostSearch(source, destination, cenary) << '\n';
+        }
+    } 
+    
+    else {
+        std::cerr << "Error opening general CSV file!" << std::endl;
+    }
+}
+
+void part2(const std::string& source, const std::string& destination, Graph& graph, size_t cenary) {
+    std::ofstream generalCSV("part2-results-cost" + std::to_string(cenary) + ".csv");
+    
+    if (generalCSV.is_open()) {
+        generateColumns(generalCSV);
+
+        for (size_t i {0}; i < 50; ++i) {
+            generalCSV << i << ",UCS," << graph.uniformCostSearch(source, destination, cenary) << '\n';
+            generalCSV << i << ",A*," << graph.AStar(source, destination, cenary).first << '\n';
+        }
+    } 
+    
+    else {
+        std::cerr << "Error opening general CSV file!" << std::endl;
+    }
+}
+
+void part3(const std::string& source, const std::string& destination, Graph& graph, size_t cenary) {
+    std::ofstream generalCSV("part3-results-cost" + std::to_string(cenary) + ".csv");
+    
+    if (generalCSV.is_open()) {
+        generateColumns(generalCSV);
+
+        for (size_t i {0}; i < 50; ++i) {
+            generalCSV << i << ",GS," << graph.greedySearch(source, destination, cenary) << '\n';
+            generalCSV << i << ",A*," << graph.AStar(source, destination, cenary).first << '\n';
+        }
+    } 
+    
+    else {
+        std::cerr << "Error opening general CSV file!" << std::endl;
+    }
+}
+
+void part4(const std::string& source, const std::string& destination, Graph& graph, size_t cenary) {
+    std::ofstream generalCSV("part4-results-cost" + std::to_string(cenary) + ".csv");
+    
+    if (generalCSV.is_open()) {
+        generateColumns(generalCSV);
+
+        for (size_t i {0}; i < 20; ++i) {
+            generalCSV << i << ",BFS," << graph.breadthFirstSearch(source, destination, cenary, true) << '\n';
+
+            generalCSV << i << ",DFS," << graph.depthFirstSearch(source, destination, cenary, true) << '\n';            
+        }
+    } 
+    
+    else {
+        std::cerr << "Error opening general CSV file!" << std::endl;
+    }
+}
+
+void part5(const std::string& source, const std::string& destination, const std::vector<std::string>& drugstores, Graph& graph, size_t cenary) {
+	std::string nearest_drugstore;
+	size_t shortest_path = std::numeric_limits<size_t>::max(); 
+
+	for (const auto& drugstore : drugstores) {
+		auto result = graph.AStar(source, drugstore, cenary);
+		
+		if (result.second < shortest_path) {
+		    shortest_path = result.second;
+		    nearest_drugstore = drugstore;
+		}
+	}
+	
+    std::ofstream generalCSV("part5-results-cost" + std::to_string(cenary) + ".csv");
+    
+    if (generalCSV.is_open()) {
+        generateColumns(generalCSV);
+
+        for (size_t i {0}; i < 25; ++i) {
+            generalCSV << i << ",A*," << graph.AStar(nearest_drugstore, destination, cenary).first << '\n';          
+        }
+    } 
+    
+    else {
+        std::cerr << "Error opening general CSV file!" << std::endl;
+    }
+}
+
 
 int main(void) {
 
@@ -83,53 +183,40 @@ int main(void) {
 	std::mt19937 seed(random_number());
 	std::uniform_int_distribution<size_t> gap(0, COORDINATES_AMOUNT - 1);
 	
+	buildGraphFile();
+	
+    Graph graph("graph.txt", cartesian_plane, map_vertices_to_coordinates, map_coordinates_to_vertices, false);
+	
 	std::string source {};
 	std::string destination {};
+	std::unordered_set<std::string> set;
+	std::vector<std::string> drugstores;
+	std::string drugstore {};
+	
+	
+    for (size_t i {0}; i < 4; ++i) {
+    	drugstore = graph.coordinatesToString(graph.vertexToCoordinate(gap(seed)));
+    	
+ 		while (set.count(drugstore)) {
+			drugstore = graph.coordinatesToString(graph.vertexToCoordinate(gap(seed)));
+			drugstores.push_back(drugstore);
+		}
 		
-    buildGraphFile();
-    
-    Graph graph("graph.txt", cartesian_plane, map_vertices_to_coordinates, map_coordinates_to_vertices, false);
+    	set.emplace(drugstore);
+    	drugstores.push_back(drugstore);
+    }
     
     source = graph.coordinatesToString(graph.vertexToCoordinate(gap(seed)));
 	destination = graph.coordinatesToString(graph.vertexToCoordinate(gap(seed)));
 	
-	/*
-	std::cout << "********* BFS ********* \n";
-    graph.breadthFirstSearch(source, destination, 4);
-    
-    std::cout << "\n\n ********* DFS ********* \n";
-    graph.depthFirstSearch(source, destination, 4);
+	for (size_t i {1}; i < 5; ++i) {
+		part1(source, destination, graph, i);
+		part2(source, destination, graph, i);
+		part3(source, destination, graph, i);
+		part4(source, destination, graph, i);
+		part5(source, destination, drugstores, graph, i);
+	}
 	
-	std::cout << "\n\n ********* A* ********* \n";
-    graph.AStar(source, destination, 4);
-    
-    std::cout << "\n\n ********* Uniform Search (Dijkstra) ********* \n";
-	graph.uniformCostSearch(source, destination, 4);
-	
-	std::cout << "\n\n ********* Greedy Search ********* \n";
-    graph.greedySearch(source, destination, 4);
-    
-    
-    std::cout << "\n\n ********* Greedy Search ********* \n";
-    graph.greedySearch(source, destination, 4);
-    
-    */
-	
-	std::cout << "********* BFS ********* \n";
-    graph.breadthFirstSearch("(0,0)", "(15,30)", 4);
-    
-    std::cout << "\n\n ********* DFS ********* \n";
-    graph.depthFirstSearch("(0,0)", "(15,30)", 4);
-    
-	std::cout << "\n\n ********* A* ********* \n";
-    graph.AStar("(0,0)", "(15,30)", 4);
-	
-    std::cout << "\n\n ********* Uniform Search (Dijkstra) ********* \n";
-	graph.uniformCostSearch("(0,0)", "(15,30)", 4);
-    
-    std::cout << "\n\n ********* Greedy Search ********* \n";
-    graph.greedySearch("(0,0)", "(15,30)", 4);
-   
     return 0;
 }
 
