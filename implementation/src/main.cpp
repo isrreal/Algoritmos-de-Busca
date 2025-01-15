@@ -104,11 +104,14 @@ int main(void) {
     std::cout << "\n\n ********* DFS ********* \n";
     graph.depthFirstSearch(x_source, y_destination, 3);
     
-    std::cout << "\n\n ********* Uniform Search (Dijkstra) ********* \n";
-    graph.uniformCostSearch(x_source, y_destination, 3);
     
     std::cout << "\n\n ********* A* ********* \n";
     graph.AStar(x_source, y_destination, 3);
+    
+    
+
+    std::cout << "\n\n ********* Uniform Search (Dijkstra) ********* \n";
+    graph.uniformCostSearch(x_source, y_destination, 3);
     
     std::cout << "\n\n ********* Greedy Search ********* \n";
     graph.greedySearch(x_source, y_destination, 3);

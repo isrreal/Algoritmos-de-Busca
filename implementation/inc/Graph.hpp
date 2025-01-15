@@ -11,6 +11,7 @@
 #include <queue>
 #include <sstream>
 #include <fstream>
+#include "Node.hpp"
 
 class Graph {
 private:
@@ -31,6 +32,7 @@ private:
     Graph readGraph(const std::string& filename);
     size_t computeMaxVertexDegree();
     size_t computeMinVertexDegree();
+    
 public:	
 	Graph(size_t order, bool isDirected, float probabilityOfEdge);	
     Graph(const std::string& filename, 
@@ -38,9 +40,6 @@ public:
 		  const std::unordered_map<size_t, std::string>& map_vertices_to_coordinates,
 		  const std::unordered_map<std::string, size_t>& map_coordinates_to_vertices,
 		  bool isDirected);
-		  
-    Graph(size_t order, bool isDirected);	
-    Graph(const Graph& graph);
 
     Graph() = default;
     ~Graph() = default;
@@ -105,16 +104,6 @@ public:
     std::string AStar(const std::string& u, const std::string& v, size_t cenary);
     
 	std::string greedySearch(const std::string& u, const std::string& v, size_t cenary);
-    
-    void setVertexLabel(size_t vertex, int label);
-    
-    void setAdjacenciesLabel(size_t vertex, int label);
-
-    std::vector<std::pair<int, int>> connectedComponents();
-    
-    void deleteAdjacencyList(size_t vertex);
-    
-    void deleteVertex(size_t vertex);
     
     friend std::ostream& operator<< (std::ostream& os, const Graph& graph);
 };

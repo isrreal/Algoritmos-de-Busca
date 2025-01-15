@@ -76,13 +76,6 @@ Graph::Graph(const std::string& filename,
     file.close();
 }
 
-Graph::Graph(const Graph& graph): order(graph.order), size(graph.size),
-	isDirected(graph.isDirected), delta(graph.delta),
-	Delta(graph.Delta), adjacency_list(graph.adjacency_list), 
-	map_vertices_to_coordinates(graph.map_vertices_to_coordinates),
-	map_coordinates_to_vertices(graph.map_coordinates_to_vertices), 
-	cartesian_plane(graph.cartesian_plane) {}
-
 size_t Graph::computeMaxVertexDegree() {
 	size_t maxDegree = getVertexDegree(getAdjacencyList().begin()->first);
     size_t temp {0};
@@ -177,36 +170,6 @@ bool Graph::vertexExists(size_t vertex) const { return adjacency_list.find(verte
 
 bool Graph::edgeExists(size_t u, size_t v) const {
     return std::find(adjacency_list.at(u).begin(), adjacency_list.at(u).end(), v) != adjacency_list.at(u).end();
-}
-
-void Graph::deleteAdjacencyList(size_t vertex) {
-    if (adjacency_list.find(vertex) == adjacency_list.end()) { return; }
-
-    std::queue<size_t> toDelete;
-    toDelete.push(vertex);
-    
-    int currentVertex { -1 };
-
-    for (const auto& it: this->adjacency_list[vertex]) {
-    	toDelete.push(it);
-    }
-
-    while (!toDelete.empty()) {
-        currentVertex = toDelete.front();
-        toDelete.pop();
-
-        for (const auto& it: this->adjacency_list[currentVertex]) {
-        	this->adjacency_list[it].remove(currentVertex);
-       	}
-       	
-       	deleteVertex(currentVertex);
-    }
-}
-
-void Graph::deleteVertex(size_t vertex) {
-    this->size -= this->adjacency_list[vertex].size();
-    this->adjacency_list.erase(vertex);
-    --this->order;
 }
 
 std::ostream& operator<< (std::ostream& os, const Graph& graph) {
@@ -521,11 +484,10 @@ std::string Graph::depthFirstSearch(const std::string& u, const std::string& v, 
 std::string Graph::AStar(const std::string& u, const std::string& v, size_t cenary) {
     std::vector<int> predecessor(this->order, -1);
     std::vector<std::string> path;
-    std::unordered_map<size_t, size_t> cost_map; // Armazena o custo acumulado (f(n) = g(n) + h(n))
+    std::unordered_map<size_t, size_t> cost_map; // Armazena f(n) = g(n) + h(n)
 
-    // Node: {vertex, cost_with_heuristic, cost_without_heuristic, depth}
-    using Node = std::tuple<size_t, size_t, size_t, size_t>;
-    std::priority_queue<Node, std::vector<Node>, std::greater<>> priority_queue;
+	std::priority_queue<Node<AStarSearch>, std::vector<Node<AStarSearch>>, std::greater<>> priority_queue;
+
 
     size_t source = coordinateToVertex(u);
     size_t destination = coordinateToVertex(v);
@@ -534,17 +496,21 @@ std::string Graph::AStar(const std::string& u, const std::string& v, size_t cena
     size_t visited_vertices_amount = 0;
     size_t path_cost = 0;
 
+    Node<AStarSearch> current_node;
+
     // Insere o nó inicial na fila de prioridade
-    priority_queue.push({source, 0, 0, 0});
+    priority_queue.push({Node<AStarSearch>(source, 0, 0, nullptr, 0)});
     cost_map[source] = 0;
 
     while (!priority_queue.empty()) {
-        auto [current_vertex, cost_with_heuristic, cost_without_heuristic, depth] = priority_queue.top();
+        current_node = priority_queue.top();
         priority_queue.pop();
 
+        ++visited_vertices_amount;
+
         // Verifica se o destino foi alcançado
-        if (current_vertex == destination) {
-            path_cost = cost_without_heuristic;
+        if (current_node.vertex == destination) {
+            path_cost = current_node.acumulated_path_cost;
             path = reconstructPath(source, destination, predecessor);
 
             // Exibe as estatísticas
@@ -558,12 +524,11 @@ std::string Graph::AStar(const std::string& u, const std::string& v, size_t cena
             );
         }
 
-        ++visited_vertices_amount;
-
         // Verifica os vizinhos do vértice atual
-        for (const auto& neighbor : getAdjacencyList(current_vertex)) {
+        for (const auto& neighbor : getAdjacencyList(current_node.vertex)) {
             // Calcula o custo acumulado g(n)
-            size_t acumulated_cost = cost_without_heuristic + neighborCost(current_vertex, neighbor, depth, cenary);
+            size_t new_acumulated_path_cost = current_node.acumulated_path_cost + 
+                                         neighborCost(current_node.vertex, neighbor, current_node.height, cenary);
 
             // Calcula o custo heurístico h(n)
             size_t heuristic_cost = heuristic1(
@@ -571,18 +536,22 @@ std::string Graph::AStar(const std::string& u, const std::string& v, size_t cena
                 vertexToCoordinate(destination).first, vertexToCoordinate(destination).second
             );
 
-            size_t new_cost_with_heuristic = acumulated_cost + heuristic_cost;
+            // f(n) = g(n) + h(n)
+            size_t new_cost_with_heuristic = new_acumulated_path_cost + heuristic_cost;
 
-            // Verifica se devemos atualizar o nó
+            // Adiciona o nó à fila se:
+            // - Não foi visitado ainda
+            // - Ou encontrou um custo menor
             if (cost_map.find(neighbor) == cost_map.end() || new_cost_with_heuristic < cost_map[neighbor]) {
                 cost_map[neighbor] = new_cost_with_heuristic;
-                predecessor[neighbor] = current_vertex;
-                priority_queue.push({neighbor, new_cost_with_heuristic, acumulated_cost, depth + 1});
+                predecessor[neighbor] = current_node.vertex;
+
+                // Cria e insere o nó na fila de prioridade
+                priority_queue.push({Node<AStarSearch>(neighbor, new_cost_with_heuristic, new_acumulated_path_cost, &current_node, current_node.height + 1)});
                 ++generated_vertices_amount;
             }
         }
     }
-
     // Caso o destino não seja alcançável
     return "Destination not reachable from source.\n";
 }
@@ -591,36 +560,32 @@ std::string Graph::AStar(const std::string& u, const std::string& v, size_t cena
 std::string Graph::uniformCostSearch(const std::string& u, const std::string& v, size_t cenary) {
     std::vector<int> predecessor(this->order, -1);
     std::vector<std::string> path;
-    std::unordered_map<size_t, size_t> cost_map; // Armazena o custo acumulado (g(n))
-    std::unordered_set<size_t> visited;         // Armazena vértices já visitados
+    std::unordered_map<size_t, size_t> cost_map; // Armazena g(n)
 
-    // Node: {vertex, cost_without_heuristic, depth}
-    using Node = std::tuple<size_t, size_t, size_t>;
-    std::priority_queue<Node, std::vector<Node>, std::greater<>> priority_queue;
+    std::priority_queue<Node<UniformCostSearch>, std::vector<Node<UniformCostSearch>>, std::greater<>> priority_queue;
 
-    size_t source { coordinateToVertex(u) };
-    size_t destination { coordinateToVertex(v) };
+    size_t source = coordinateToVertex(u);
+    size_t destination = coordinateToVertex(v);
 
-    size_t generated_vertices_amount {0};
-    size_t visited_vertices_amount {0};
-    size_t path_cost {0};
-    size_t new_acumulated_cost {0};
+    size_t generated_vertices_amount = 0;
+    size_t visited_vertices_amount = 0;
+    size_t path_cost = 0;
 
-    // Inicializa a fila de prioridade com o nó de origem
-    priority_queue.push({source, 0, 0});
+    Node<UniformCostSearch> current_node;
+
+    // Insere o nó inicial na fila de prioridade com custo acumulado 0
+    priority_queue.push({Node<UniformCostSearch>(source, 0, 0, nullptr, 0)});
     cost_map[source] = 0;
 
     while (!priority_queue.empty()) {
-        auto [current_vertex, acumulated_cost, depth] = priority_queue.top();
+        current_node = priority_queue.top();
         priority_queue.pop();
-		
-        // Marca o vértice como visitado
-        visited.insert(current_vertex);
+
         ++visited_vertices_amount;
 
         // Verifica se o destino foi alcançado
-        if (current_vertex == destination) {
-            path_cost = acumulated_cost;
+        if (current_node.vertex == destination) {
+            path_cost = current_node.acumulated_path_cost;
             path = reconstructPath(source, destination, predecessor);
 
             // Exibe as estatísticas
@@ -635,17 +600,20 @@ std::string Graph::uniformCostSearch(const std::string& u, const std::string& v,
         }
 
         // Verifica os vizinhos do vértice atual
-        for (const auto& neighbor : getAdjacencyList(current_vertex)) {
+        for (const auto& neighbor : getAdjacencyList(current_node.vertex)) {
             // Calcula o custo acumulado g(n)
-            new_acumulated_cost = acumulated_cost + neighborCost(current_vertex, neighbor, depth, cenary);
+            size_t new_acumulated_path_cost = current_node.acumulated_path_cost + 
+                                         neighborCost(current_node.vertex, neighbor, current_node.height, cenary);
 
-            // Expande caso seja válido: não visitado ou menor custo encontrado
-            if (cost_map.find(neighbor) == cost_map.end() || new_acumulated_cost < cost_map[neighbor]) {
-                cost_map[neighbor] = new_acumulated_cost;
-                predecessor[neighbor] = current_vertex;
+            // Adiciona o nó à fila se:
+            // - Não foi visitado ainda
+            // - Ou encontrou um custo menor
+            if (cost_map.find(neighbor) == cost_map.end() || new_acumulated_path_cost < cost_map[neighbor]) {
+                cost_map[neighbor] = new_acumulated_path_cost;
+                predecessor[neighbor] = current_node.vertex;
 
-                // Adiciona à fila de prioridade com o novo custo
-                priority_queue.push({neighbor, new_acumulated_cost, depth + 1});
+                // Cria e insere o nó na fila de prioridade com custo acumulado atualizado
+                priority_queue.push( {Node<UniformCostSearch>(neighbor, 0, new_acumulated_path_cost, &current_node, current_node.height + 1)} );
                 ++generated_vertices_amount;
             }
         }
@@ -658,12 +626,10 @@ std::string Graph::uniformCostSearch(const std::string& u, const std::string& v,
 std::string Graph::greedySearch(const std::string& u, const std::string& v, size_t cenary) {
     std::vector<int> predecessor(this->order, -1);
     std::vector<std::string> path;
-    std::unordered_map<size_t, size_t> cost_map; // Armazena o custo acumulado (f(n) = g(n) + h(n))
-    std::unordered_set<size_t> visited;         // Armazena os vértices visitados
+    std::unordered_map<size_t, size_t> cost_map; // Armazena f(n) = g(n) + h(n)
 
-    // Node: {vertex, cost_with_heuristic, cost_without_heuristic, depth}
-    using Node = std::tuple<size_t, size_t, size_t, size_t>;
-    std::priority_queue<Node, std::vector<Node>, std::greater<>> priority_queue;
+	std::priority_queue<Node<GreedySearch>, std::vector<Node<GreedySearch>>, std::greater<>> priority_queue;
+
 
     size_t source = coordinateToVertex(u);
     size_t destination = coordinateToVertex(v);
@@ -672,22 +638,21 @@ std::string Graph::greedySearch(const std::string& u, const std::string& v, size
     size_t visited_vertices_amount = 0;
     size_t path_cost = 0;
 
+    Node<GreedySearch> current_node;
+
     // Insere o nó inicial na fila de prioridade
-    priority_queue.push({source, 0, 0, 0});
+    priority_queue.push({Node<GreedySearch>(source, 0, 0, nullptr, 0)});
     cost_map[source] = 0;
 
     while (!priority_queue.empty()) {
-        auto [current_vertex, cost_with_heuristic, cost_without_heuristic, depth] = priority_queue.top();
+        current_node = priority_queue.top();
         priority_queue.pop();
 
-
-        // Marca o vértice como visitado
-        visited.insert(current_vertex);
         ++visited_vertices_amount;
 
         // Verifica se o destino foi alcançado
-        if (current_vertex == destination) {
-            path_cost = cost_without_heuristic;
+        if (current_node.vertex == destination) {
+            path_cost = current_node.acumulated_path_cost;
             path = reconstructPath(source, destination, predecessor);
 
             // Exibe as estatísticas
@@ -698,15 +663,14 @@ std::string Graph::greedySearch(const std::string& u, const std::string& v, size
                 path_cost,
                 generated_vertices_amount,
                 visited_vertices_amount
-            );        
+            );
         }
 
         // Verifica os vizinhos do vértice atual
-        for (const auto& neighbor : getAdjacencyList(current_vertex)) {
-            // Ignora vizinhos já visitados
-
+        for (const auto& neighbor : getAdjacencyList(current_node.vertex)) {
             // Calcula o custo acumulado g(n)
-            size_t acumulated_cost = cost_without_heuristic + neighborCost(current_vertex, neighbor, depth, cenary);
+            size_t new_acumulated_path_cost = current_node.acumulated_path_cost + 
+                                         neighborCost(current_node.vertex, neighbor, current_node.height, cenary);
 
             // Calcula o custo heurístico h(n)
             size_t heuristic_cost = heuristic1(
@@ -714,16 +678,20 @@ std::string Graph::greedySearch(const std::string& u, const std::string& v, size
                 vertexToCoordinate(destination).first, vertexToCoordinate(destination).second
             );
 
-            // Atualiza o mapa de custos e insere na fila se encontrar um caminho melhor
+
+            // Adiciona o nó à fila se:
+            // - Não foi visitado ainda
+            // - Ou encontrou um custo menor
             if (cost_map.find(neighbor) == cost_map.end()) {
                 cost_map[neighbor] = heuristic_cost;
-                predecessor[neighbor] = current_vertex;
-                priority_queue.push({neighbor, heuristic_cost, acumulated_cost, depth + 1});
+                predecessor[neighbor] = current_node.vertex;
+
+                // Cria e insere o nó na fila de prioridade
+                priority_queue.push({Node<GreedySearch>(neighbor, heuristic_cost, new_acumulated_path_cost, &current_node, current_node.height + 1)});
                 ++generated_vertices_amount;
             }
         }
     }
-
     // Caso o destino não seja alcançável
     return "Destination not reachable from source.\n";
 }
