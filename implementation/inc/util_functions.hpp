@@ -81,75 +81,25 @@ inline void buildGraphFile() {
  * @param graph Reference to the graph object representing the city.
  * @return A vector containing string representations of the coordinates of the drugstores.
  * 
- * @details
- * The experiment involves determining the shortest path for an agent traveling 
- * from work to home while passing through at least one drugstore. This function 
- * generates the random drugstore locations used in the experiment. The generated 
- * locations ensure that there are no duplicate drugstore coordinates.
- * 
  * @note Drugstore locations are chosen using a random seed and are converted to 
  * a string format for easier processing.
  */
  
-inline std::vector<std::string> generateDrugstores(Graph& graph) {
-	std::unordered_set<std::string> set;
-	std::vector<std::string> drugstores;
+inline std::unordered_set<std::string> generateDrugstores(Graph& graph) {
+	std::unordered_set<std::string> drugstores;
 	std::string drugstore {};
 	
 	for (size_t i {0}; i < 4; ++i) {
     	drugstore = graph.coordinatesToString(graph.vertexToCoordinate(gap(seed)));
     	
- 		while (set.count(drugstore)) {
+ 		while (drugstores.count(drugstore)) {
 			drugstore = graph.coordinatesToString(graph.vertexToCoordinate(gap(seed)));
-			drugstores.push_back(drugstore);
 		}
 		
-    	set.emplace(drugstore);
-    	drugstores.push_back(drugstore);
+    	drugstores.emplace(drugstore);
     }
     
     return drugstores;
-}
-
-/**
- * @brief Finds the nearest drugstore to a given source location.
- * 
- * This function uses the A* search algorithm to calculate the shortest path 
- * from a source location to each drugstore in the provided list. It returns 
- * the drugstore that is closest to the source in terms of path cost.
- * 
- * @param source The string representation of the starting location (agent's current position).
- * @param drugstores A vector of strings representing the coordinates of available drugstores.
- * @param graph Reference to the graph object representing the city.
- * @param cenary A parameter used to configure the A* algorithm (e.g., environmental conditions or weights).
- * @param heuristic The heuristic function to be used by the A* algorithm.
- * @return The string representation of the nearest drugstore's coordinates.
- * 
- * @details
- * The agent must find the drugstore that minimizes the travel cost before proceeding 
- * to their destination. The A* algorithm evaluates the cost of reaching each drugstore, 
- * considering both heuristic values and edge weights in the graph. The drugstore with 
- * the lowest path cost is selected as the nearest.
- * 
- * @note This function assumes that all drugstores provided in the vector are valid locations 
- * in the graph. The A* algorithm is used exclusively in this experiment, but it is 
- * recommended to compare the results with Uniform Cost Search for additional insights.
- */
- 
-inline std::string getNearestDrugstore(const std::string& source, std::vector<std::string> drugstores, Graph& graph, size_t cenary, size_t heuristic) {
-	std::string nearest_drugstore {};
-	size_t shortest_path { std::numeric_limits<size_t>::max() }; 
-	
-	for (const auto& drugstore : drugstores) {
-		auto result = graph.AStar(source, drugstore, cenary, heuristic);
-		
-		if (result.second < shortest_path) {
-			shortest_path = result.second;
-			nearest_drugstore = drugstore;
-		}
-	}
-	
-	return nearest_drugstore;
 }
 
 #endif
