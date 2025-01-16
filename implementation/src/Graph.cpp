@@ -433,7 +433,7 @@ std::string Graph::depthFirstSearch(const std::string& u, const std::string& v, 
 }
 
 
-std::pair<std::string, size_t> Graph::AStar(const std::string& u, const std::string& v, size_t cenary) {
+std::pair<std::string, size_t> Graph::AStar(const std::string& u, const std::string& v, size_t cenary, size_t heuristic) {
     std::unordered_map<size_t, size_t> cost_map; // Armazena f(n) = g(n) + h(n)
     std::priority_queue<Node, std::vector<Node>, std::greater<>> priority_queue;
     std::vector<std::string> path;
@@ -482,22 +482,25 @@ std::pair<std::string, size_t> Graph::AStar(const std::string& u, const std::str
                                               neighborCost(current_node.vertex, neighbor, current_node.height, cenary);
 
             // Calcula o custo heurístico h(n)
-            size_t heuristic_cost = heuristic2(
-                vertexToCoordinate(neighbor).first, vertexToCoordinate(neighbor).second,
-                vertexToCoordinate(destination).first, vertexToCoordinate(destination).second
-            );
+            size_t heuristic_cost = (heuristic == 1 ? heuristic1(
+				vertexToCoordinate(neighbor).first, vertexToCoordinate(neighbor).second,
+				vertexToCoordinate(destination).first, vertexToCoordinate(destination).second)
+				: heuristic2(
+				vertexToCoordinate(neighbor).first, vertexToCoordinate(neighbor).second,
+				vertexToCoordinate(destination).first, vertexToCoordinate(destination).second
+			  ));
+
 
             // f(n) = g(n) + h(n)
-            size_t new_cost_with_heuristic = new_acumulated_path_cost + heuristic_cost;
 
             // Adiciona o nó à fila se:
             // - Não foi visitado ainda
             // - Ou encontrou um custo menor
-            if ((cost_map.find(neighbor) == cost_map.end()) || (new_cost_with_heuristic < cost_map[neighbor])) {
-				cost_map[neighbor] = new_cost_with_heuristic;
+            if (cost_map.find(neighbor) == cost_map.end() || (new_acumulated_path_cost + heuristic_cost < cost_map[neighbor])) {
+				cost_map[neighbor] = new_acumulated_path_cost + heuristic_cost;
 				predecessor[neighbor] = current_node.vertex;
-				priority_queue.push(Node(neighbor, new_cost_with_heuristic, heuristic_cost, 
-						                 new_acumulated_path_cost, current_node.height + 1));
+
+				priority_queue.push(Node(neighbor, cost_map[neighbor], heuristic_cost, new_acumulated_path_cost, current_node.height + 1));
 				++generated_vertices_amount;
 			}
         }
@@ -506,7 +509,6 @@ std::pair<std::string, size_t> Graph::AStar(const std::string& u, const std::str
     // Caso o destino não seja alcançável
     return std::make_pair<std::string, size_t>("Destination not reachable from source.\n", 0);
 }
-
 
 std::string Graph::uniformCostSearch(const std::string& u, const std::string& v, size_t cenary) {
     std::vector<int> predecessor(this->order, -1);
@@ -560,7 +562,7 @@ std::string Graph::uniformCostSearch(const std::string& u, const std::string& v,
                 predecessor[neighbor] = current_node.vertex;
 
                 // Cria e insere o nó na fila de prioridade com custo acumulado atualizado
-                priority_queue.push( { Node(neighbor, new_acumulated_path_cost, 0, new_acumulated_path_cost, current_node.height + 1) } );
+                priority_queue.push( { Node(neighbor, cost_map[neighbor], 0, new_acumulated_path_cost, current_node.height + 1) } );
                  					 
                 ++generated_vertices_amount;
             }
@@ -571,7 +573,7 @@ std::string Graph::uniformCostSearch(const std::string& u, const std::string& v,
     return "Destination not reachable from source.\n";
 }
 
-std::string Graph::greedySearch(const std::string& u, const std::string& v, size_t cenary) {
+std::string Graph::greedySearch(const std::string& u, const std::string& v, size_t cenary, size_t heuristic) {
     std::vector<int> predecessor(this->order, -1);
     std::vector<std::string> path;
     std::unordered_map<size_t, size_t> cost_map; // Armazena f(n) = g(n) + h(n)
@@ -617,10 +619,13 @@ std::string Graph::greedySearch(const std::string& u, const std::string& v, size
                                          neighborCost(current_node.vertex, neighbor, current_node.height, cenary);
 
             // Calcula o custo heurístico h(n)
-            size_t heuristic_cost = heuristic1(
-                vertexToCoordinate(neighbor).first, vertexToCoordinate(neighbor).second,
-                vertexToCoordinate(destination).first, vertexToCoordinate(destination).second
-            );
+            size_t heuristic_cost = (heuristic == 1 ? heuristic1(
+				vertexToCoordinate(neighbor).first, vertexToCoordinate(neighbor).second,
+				vertexToCoordinate(destination).first, vertexToCoordinate(destination).second
+      		) : heuristic2(
+				vertexToCoordinate(neighbor).first, vertexToCoordinate(neighbor).second,
+				vertexToCoordinate(destination).first, vertexToCoordinate(destination).second
+			  ));
 
             // Adiciona o nó à fila se:
             // - Não foi visitado ainda

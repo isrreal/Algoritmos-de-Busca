@@ -96,9 +96,9 @@ public:
     
     std::string uniformCostSearch(const std::string& u, const std::string& v, size_t cenary);
     
-    std::pair<std::string, size_t> AStar(const std::string& u, const std::string& v, size_t cenary);
+    std::pair<std::string, size_t> AStar(const std::string& u, const std::string& v, size_t cenary, size_t heuristic);
     
-	std::string greedySearch(const std::string& u, const std::string& v, size_t cenary);
+	std::string greedySearch(const std::string& u, const std::string& v, size_t cenary, size_t heuristic);
     
     friend std::ostream& operator<< (std::ostream& os, const Graph& graph);
 };
