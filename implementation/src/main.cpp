@@ -97,21 +97,21 @@ void part2(Graph& graph) {
     std::ofstream generalCSV2("part2-results-astar.csv");
 
     if (generalCSV1.is_open() && generalCSV2.is_open()) {
-        generalCSV1 << "Iteration,Algorithm,Cenary,Initial State,Objective,Generated vertices amount,Visited vertices amount,Cost,Path\n";
-        generalCSV2 << "Iteration,Algorithm,Cenary,Initial State,Objective,Generated vertices amount,Visited vertices amount,Cost,Path\n";
+        generalCSV1 << "Iteration,Cenary,Initial State,Objective,Generated vertices amount,Visited vertices amount,Cost,Path\n";
+        generalCSV2 << "Iteration,Heuristic,Cenary,Initial State,Objective,Generated vertices amount,Visited vertices amount,Cost,Path\n";
 
         for (size_t i {0}; i < 50; ++i) {
             source = graph.coordinatesToString(graph.vertexToCoordinate(gap(seed)));
             destination = graph.coordinatesToString(graph.vertexToCoordinate(gap(seed)));
             
             for (size_t cenary {1}; cenary <= 4; ++cenary) {  
-                generalCSV1 << i << "," << cenary << "," 
+                generalCSV1 << i << ',' << cenary << ',' 
                             << graph.uniformCostSearch(source, destination, cenary) << '\n';
             }
 
             for (size_t cenary {1}; cenary <= 4; ++cenary) {  
                 for (size_t heuristic {1}; heuristic <= 2; ++heuristic) {  
-                    generalCSV2 << i << "," << cenary << "," << heuristic << ","
+                    generalCSV2 << i << ',' << heuristic << ',' << cenary << ','
                                 << graph.AStar(source, destination, cenary, heuristic).first << '\n';
                 }
             }
