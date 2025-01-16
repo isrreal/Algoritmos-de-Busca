@@ -217,6 +217,30 @@ std::string Graph::coordinatesToString(const std::pair<size_t, size_t>& coordina
 	return "(" + std::to_string(x) + " " + std::to_string(y) + ")";
 }
 
+/**
+ * @brief Calculates the cost of moving from one vertex to another based on the provided scenario.
+ * 
+ * This function calculates the cost associated with moving between two vertices in a graph, considering the provided scenario. 
+ * The costs may vary depending on whether the movement is horizontal or vertical, and different scenarios apply 
+ * specific cost functions.
+ * 
+ * @param u Source vertex.
+ * @param v Destination vertex.
+ * @param steps_root_to_objective_amount Number of steps from the root node to the objective.
+ * @param cenary The scenario used to calculate the cost. The possible scenarios are:
+ *               - Scenario 1: A fixed cost of 10 for all movements.
+ *               - Scenario 2: A fixed cost of 15 for horizontal movements.
+ *               - Scenario 3: A cost based on the distance to the objective. The cost is calculated as 
+ *                 10 + (|5 - steps| % 6), where `steps` is the number of steps from the root to the objective.
+ *               - Scenario 4: A cost based on the distance to the objective. The cost is calculated as 
+ *                 5 + (|10 - steps| % 11), where `steps` is the number of steps from the root to the objective.
+ * @return size_t The calculated cost for the path between the vertices.
+ * 
+ * @details The calculation distinguishes between horizontal and vertical movements. If the movement is horizontal 
+ * (change in the x-axis), specific costs are applied depending on the scenario. Otherwise, for vertical movements 
+ * (change in the y-axis), the cost from scenario 1 is used.
+ */
+
 size_t Graph::neighborCost(size_t u, size_t v, size_t steps_root_to_objective_amount, size_t cenary) {
     auto current_coords { vertexToCoordinate(u) };
     auto destination_coords { vertexToCoordinate(v) };
@@ -263,6 +287,36 @@ std::vector<std::string> Graph::buildPath(size_t source, size_t destination, con
     
     return path;
 }
+
+/**
+ * @brief Performs a Breadth-First Search (BFS) on the graph.
+ * 
+ * @param u Coordinates of the source vertex in string format.
+ * @param v Coordinates of the destination vertex in string format.
+ * @param cenary Scenario used for cost calculation.
+ * @param randomize Indicates whether the neighbors should be explored in random order.
+ * @return std::string Search statistics: initial state, search objective, number of generated and visited vertices,
+ *         cost, and coordinates of the found path.
+ * 
+ * @details
+ * Breadth-First Search (BFS) is an algorithm for traversing or searching through a graph, starting at the initial
+ * vertex and exploring all neighboring vertices at the present depth level before moving on to vertices at the next depth level.
+ * 
+ * In BFS, the algorithm explores all possible neighbors of a vertex before proceeding to the next level of neighbors.
+ * This guarantees that the shortest path to the destination (if it exists) will be found.
+ * 
+ * The search expands by visiting vertices level by level. BFS does not backtrack and guarantees finding the shortest path
+ * (if one exists) in an unweighted graph or graph with equal weights on edges.
+ * 
+ * If the `randomize` parameter is set to `true`, the neighbors of each node will be explored in random order, which can
+ * introduce variability into the search process. If `randomize` is `false`, the neighbors will be explored in a fixed order.
+ * 
+ * The search statistics include details such as the initial state, goal state, the number of vertices generated and visited
+ * during the search, the total cost of the found path, and the coordinates of the path.
+ *
+ * @note Nodes can't be repeated.
+ *
+ */
 
 std::string Graph::breadthFirstSearch(const std::string& u, const std::string& v, size_t cenary, bool randomize) {
     std::unordered_set<size_t> visited; 
@@ -348,6 +402,30 @@ std::string Graph::breadthFirstSearch(const std::string& u, const std::string& v
     return "Destination not reachable from source.\n";
 }
 
+/**
+ * @brief Performs a depth-first search (DFS) on the graph.
+ * 
+ * @param u Coordinates of the source vertex in string format.
+ * @param v Coordinates of the destination vertex in string format.
+ * @param cenary Scenario used for cost calculation.
+ * @param randomize Indicates whether the neighbors should be explored in random order.
+ * @return std::string Search statistics: initial state, search objective, number of generated and visited vertices,
+ *         cost, and coordinates of the found path.
+ * 
+ * @details
+ * Depth-first search (DFS) is an algorithm that explores as far as possible along each branch before backtracking. 
+ * Starting at the source vertex, the algorithm recursively visits the next unexplored neighbor until the destination 
+ * vertex is found or all paths have been explored. If the `randomize` parameter is set to true, the order in which 
+ * neighbors are explored is randomized, introducing variability in the traversal.
+ * 
+ * This approach is useful for searching deep paths in the graph, but it does not guarantee the shortest path is found. 
+ * DFS may explore paths unnecessarily, especially in graphs with cycles or large branching factors. The algorithm 
+ * can be adapted with cycle detection to avoid infinite loops.
+ *
+ * @note Nodes can't be repeated.
+ *
+ */
+
 std::string Graph::depthFirstSearch(const std::string& u, const std::string& v, size_t cenary, bool randomize) {
     std::unordered_set<size_t> visited;  
     std::vector<int> predecessor(this->order, -1);  
@@ -432,7 +510,31 @@ std::string Graph::depthFirstSearch(const std::string& u, const std::string& v, 
     return "Destination not reachable from source.\n";
 }
 
-
+/**
+ * @brief Performs A* pathfinding algorithm to find the optimal path between two points, using search trees.
+ *
+ * @param u The starting point (initial state) as a string representation of coordinates.
+ * @param v The destination point (goal state) as a string representation of coordinates.
+ * @param cenary The scenario or environment configuration that influences the search.
+ * @param heuristic The heuristic function used to guide the search (e.g., Manhattan, Euclidean).
+ * 
+ * @details
+ * This function implements the A* algorithm for finding the shortest path from the starting node (u) 
+ * to the destination node (v). The algorithm combines the actual cost to reach a node (g(n)) with an estimate
+ * of the cost from that node to the goal (h(n)), where the total cost function is defined as f(n) = g(n) + h(n).
+ * 
+ * The search expands nodes by always choosing the one with the lowest total cost (f(n)), ensuring that 
+ * the most promising nodes are explored first. At each step, the algorithm evaluates neighboring nodes 
+ * and adds them to the open set if they are not already visited or if a cheaper path to them is found.
+ * 
+ * The A* search continues until the goal is reached or all possible paths have been explored. The function 
+ * also takes into account the given scenario (cenary) and heuristic function to guide the search efficiently.
+ *
+ * @note Nodes can be repeated because the same vertex may appear with a lower cost than its previous value.
+ *
+ *
+ */
+ 
 std::pair<std::string, size_t> Graph::AStar(const std::string& u, const std::string& v, size_t cenary, size_t heuristic) {
     std::unordered_map<size_t, size_t> cost_map; // Armazena f(n) = g(n) + h(n)
     std::priority_queue<Node, std::vector<Node>, std::greater<>> priority_queue;
@@ -445,6 +547,8 @@ std::pair<std::string, size_t> Graph::AStar(const std::string& u, const std::str
 
     size_t generated_vertices_amount {0};
     size_t visited_vertices_amount {0};
+    size_t heuristic_cost {0};
+    size_t new_acumulated_path_cost {0};
 
     Node current_node;
 
@@ -477,15 +581,15 @@ std::pair<std::string, size_t> Graph::AStar(const std::string& u, const std::str
 
         // Verifica os vizinhos do vértice atual
         for (const auto& neighbor : getAdjacencyList(current_node.vertex)) {
-            // Calcula o custo acumulado g(n)
-            size_t new_acumulated_path_cost = current_node.path_cost +
-                                              neighborCost(current_node.vertex, neighbor, current_node.height, cenary);
+           // Calcula o custo acumulado g(n)
+            new_acumulated_path_cost = current_node.path_cost + 
+                                         neighborCost(current_node.vertex, neighbor, current_node.height, cenary);
 
             // Calcula o custo heurístico h(n)
-            size_t heuristic_cost = (heuristic == 1 ? heuristic1(
+            heuristic_cost = (heuristic == 1 ? heuristic1(
 				vertexToCoordinate(neighbor).first, vertexToCoordinate(neighbor).second,
-				vertexToCoordinate(destination).first, vertexToCoordinate(destination).second)
-				: heuristic2(
+				vertexToCoordinate(destination).first, vertexToCoordinate(destination).second
+      		) : heuristic2(
 				vertexToCoordinate(neighbor).first, vertexToCoordinate(neighbor).second,
 				vertexToCoordinate(destination).first, vertexToCoordinate(destination).second
 			  ));
@@ -499,7 +603,8 @@ std::pair<std::string, size_t> Graph::AStar(const std::string& u, const std::str
             if (cost_map.find(neighbor) == cost_map.end() || (new_acumulated_path_cost + heuristic_cost < cost_map[neighbor])) {
 				cost_map[neighbor] = new_acumulated_path_cost + heuristic_cost;
 				predecessor[neighbor] = current_node.vertex;
-
+		
+                // Cria e insere o nó na fila de prioridade, onde o valor de comparação do nó é seu custo acumulado + menor estimativa até o objetivo.
 				priority_queue.push(Node(neighbor, cost_map[neighbor], heuristic_cost, new_acumulated_path_cost, current_node.height + 1));
 				++generated_vertices_amount;
 			}
@@ -509,6 +614,31 @@ std::pair<std::string, size_t> Graph::AStar(const std::string& u, const std::str
     // Caso o destino não seja alcançável
     return std::make_pair<std::string, size_t>("Destination not reachable from source.\n", 0);
 }
+
+/**
+ * @brief Performs uniform-cost search on the graph, using search trees
+ * 
+ * @param u Coordinates of the source vertex in string format.
+ * @param v Coordinates of the destination vertex in string format.
+ * @param cenary Scenario used for cost calculation.
+ * @return std::string Search statistics: initial state, search objective, number of generated and visited vertices,
+ *         cost, and coordinates of the found path.
+ * 
+ * @details
+ * Uniform-cost search is a variant of the A* algorithm where the heuristic function h(n) is set to 0. 
+ * This means the algorithm does not consider an estimate of the cost to the destination, and is guided solely 
+ * by the accumulated cost of each node (g(n)).
+ * 
+ * At each expanded node, the algorithm checks its neighbors and adds them to the priority queue based on 
+ * the total accumulated cost to reach that point. The node with the lowest accumulated cost is expanded first. 
+ * The search continues until the objective is reached, or until all possible nodes are explored.
+ * 
+ * This algorithm is guaranteed to find the least-cost path in graphs with non-negative edge costs.
+ *
+ * @note Nodes can be repeated because the same vertex may appear with a lower cost than its previous value.
+ *
+ */
+
 
 std::string Graph::uniformCostSearch(const std::string& u, const std::string& v, size_t cenary) {
     std::vector<int> predecessor(this->order, -1);
@@ -522,6 +652,7 @@ std::string Graph::uniformCostSearch(const std::string& u, const std::string& v,
 
     size_t generated_vertices_amount {0};
     size_t visited_vertices_amount {0};
+    size_t new_acumulated_path_cost {0};
 
     Node current_node;
 
@@ -551,7 +682,7 @@ std::string Graph::uniformCostSearch(const std::string& u, const std::string& v,
         // Verifica os vizinhos do vértice atual
         for (const auto& neighbor : getAdjacencyList(current_node.vertex)) {
             // Calcula o custo acumulado g(n)
-            size_t new_acumulated_path_cost = current_node.path_cost + 
+            new_acumulated_path_cost = current_node.path_cost + 
                                          neighborCost(current_node.vertex, neighbor, current_node.height, cenary);
 
             // Adiciona o nó à fila se:
@@ -561,8 +692,8 @@ std::string Graph::uniformCostSearch(const std::string& u, const std::string& v,
                 cost_map[neighbor] = new_acumulated_path_cost;
                 predecessor[neighbor] = current_node.vertex;
 
-                // Cria e insere o nó na fila de prioridade com custo acumulado atualizado
-                priority_queue.push( { Node(neighbor, cost_map[neighbor], 0, new_acumulated_path_cost, current_node.height + 1) } );
+                // Cria e insere o nó na fila de prioridade, onde o valor de comparação do nó é somente seu custo acumulado desde o nó raiz.
+                priority_queue.push( { Node(neighbor, new_acumulated_path_cost, 0, new_acumulated_path_cost, current_node.height + 1) } );
                  					 
                 ++generated_vertices_amount;
             }
@@ -573,6 +704,30 @@ std::string Graph::uniformCostSearch(const std::string& u, const std::string& v,
     return "Destination not reachable from source.\n";
 }
 
+/**
+ * @brief Performs greedy search on the graph, using search trees.
+ * 
+ * @param u Coordinates of the source vertex in string format.
+ * @param v Coordinates of the destination vertex in string format.
+ * @param cenary Scenario used for cost calculation.
+ * @return std::string Search statistics: initial state, search objective, number of generated and visited vertices,
+ *         cost, and coordinates of the found path.
+ * 
+ * @details
+ * In the greedy search algorithm, the initial node is visited, and its adjacent vertices are generated. The search is 
+ * guided solely by the heuristic estimate h(n), which approximates the cost from the current node to the goal. 
+ * The cost function f(n) is given by f(n) = 0 + h(n), making it a variant of A* where the accumulated cost g(n) is ignored.
+ * 
+ * The algorithm expands nodes based on the smallest estimated cost to reach the destination (h(n)), 
+ * without considering the cost already incurred to reach the current node.
+ * 
+ * This approach may not always find the optimal path as it doesn't account for the actual cost of the path taken.
+ *
+ * @note Nodes can be repeated because the same vertex may appear with a lower cost than its previous value.
+ *
+ */
+
+ 
 std::string Graph::greedySearch(const std::string& u, const std::string& v, size_t cenary, size_t heuristic) {
     std::vector<int> predecessor(this->order, -1);
     std::vector<std::string> path;
@@ -586,6 +741,9 @@ std::string Graph::greedySearch(const std::string& u, const std::string& v, size
 
     size_t generated_vertices_amount {0};
     size_t visited_vertices_amount {0};
+    
+    size_t new_acumulated_path_cost {0};
+    size_t heuristic_cost {0};
 
     Node current_node;
 
@@ -615,11 +773,11 @@ std::string Graph::greedySearch(const std::string& u, const std::string& v, size
         // Verifica os vizinhos do vértice atual
         for (const auto& neighbor : getAdjacencyList(current_node.vertex)) {
             // Calcula o custo acumulado g(n)
-            size_t new_acumulated_path_cost = current_node.path_cost + 
+            new_acumulated_path_cost = current_node.path_cost + 
                                          neighborCost(current_node.vertex, neighbor, current_node.height, cenary);
 
             // Calcula o custo heurístico h(n)
-            size_t heuristic_cost = (heuristic == 1 ? heuristic1(
+            heuristic_cost = (heuristic == 1 ? heuristic1(
 				vertexToCoordinate(neighbor).first, vertexToCoordinate(neighbor).second,
 				vertexToCoordinate(destination).first, vertexToCoordinate(destination).second
       		) : heuristic2(
@@ -629,13 +787,12 @@ std::string Graph::greedySearch(const std::string& u, const std::string& v, size
 
             // Adiciona o nó à fila se:
             // - Não foi visitado ainda
-            // - Ou encontrou um custo menor
             if (cost_map.find(neighbor) == cost_map.end()) {
                 cost_map[neighbor] = heuristic_cost;
                 predecessor[neighbor] = current_node.vertex;
 
-                // Cria e insere o nó na fila de prioridade
-                priority_queue.push( {Node(neighbor, heuristic_cost, 0, new_acumulated_path_cost, current_node.height + 1)} );
+                // Cria e insere o nó na fila de prioridade, onde o valor de comparação do nó é somente seu custo heurístico
+                priority_queue.push( { Node(neighbor, heuristic_cost, 0, new_acumulated_path_cost, current_node.height + 1) } );
                 ++generated_vertices_amount;
             }
         }
