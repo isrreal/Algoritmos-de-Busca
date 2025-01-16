@@ -112,7 +112,7 @@ void part2(Graph& graph) {
             for (size_t cenary {1}; cenary <= 4; ++cenary) {  
                 for (size_t heuristic {1}; heuristic <= 2; ++heuristic) {  
                     generalCSV2 << i << ',' << heuristic << ',' << cenary << ','
-                                << graph.AStar(source, destination, cenary, heuristic).first << '\n';
+                                << graph.AStar(source, destination, cenary, heuristic, {}).first << '\n';
                 }
             }
         }
@@ -161,7 +161,7 @@ void part3(Graph& graph) {
                                << graph.greedySearch(source, destination, cenary, heuristic) << '\n';
 
                     generalCSV << i << ",A*," << cenary << "," << heuristic << ","
-                               << graph.AStar(source, destination, cenary, heuristic).first << '\n';
+                               << graph.AStar(source, destination, cenary, heuristic, {}).first << '\n';
                 }
             }
         }
@@ -243,8 +243,7 @@ void part4(Graph& graph) {
 void part5(Graph& graph) {
     std::string source {};
     std::string destination {};
-    std::vector<std::string> drugstores;
-    std::string nearest_drugstore {};
+    std::unordered_set<std::string> drugstores;
     
     std::ofstream generalCSV("part5-results.csv");
 
@@ -258,10 +257,9 @@ void part5(Graph& graph) {
             for (size_t cenary {1}; cenary <= 4; ++cenary) {
                 for (size_t heuristic {1}; heuristic <= 2; ++heuristic) {
                     drugstores = generateDrugstores(graph);
-                    nearest_drugstore = getNearestDrugstore(source, drugstores, graph, cenary, heuristic);
 
                     generalCSV << i << ",A*," << cenary << "," << heuristic << ","
-                               << graph.AStar(nearest_drugstore, destination, cenary, heuristic).first << '\n';
+                               << graph.AStar(source, destination, cenary, heuristic, drugstores).first << '\n';
                 }
             }
         }
@@ -271,7 +269,6 @@ void part5(Graph& graph) {
         std::cerr << "Error opening general CSV file!" << std::endl;
     }
 }
-
 
 int main(void) {	
 	buildGraphFile();
