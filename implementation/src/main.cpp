@@ -33,7 +33,7 @@
  * Results are saved in the CSV file `part1-results.csv` with the following headers:
  * Iteration,Algorithm,Cenary,Initial State,Objective,Generated vertices amount,Visited vertices amount,Cost,Path.
  */
- 
+
 void part1(Graph& graph) {
     std::string source {};
     std::string destination {};
@@ -44,8 +44,8 @@ void part1(Graph& graph) {
         generalCSV << "Iteration,Algorithm,Cenary,Initial State,Objective,Generated vertices amount,Visited vertices amount,Cost,Path\n";
 
         for (size_t i {0}; i < 50; ++i) { 
-            source = graph.coordinatesToString(graph.vertexToCoordinate(gap(seed)));
-            destination = graph.coordinatesToString(graph.vertexToCoordinate(gap(seed)));
+            source = graph.coordinatesToString(graph.vertexToCoordinate(getRandomNumber()));
+            destination = graph.coordinatesToString(graph.vertexToCoordinate(getRandomNumber()));
             
             for (size_t cenary {1}; cenary <= 4; ++cenary) {  
                 generalCSV << i << ",BFS," << cenary << "," 
@@ -101,8 +101,8 @@ void part2(Graph& graph) {
         generalCSV2 << "Iteration,Heuristic,Cenary,Initial State,Objective,Generated vertices amount,Visited vertices amount,Cost,Path\n";
 
         for (size_t i {0}; i < 50; ++i) {
-            source = graph.coordinatesToString(graph.vertexToCoordinate(gap(seed)));
-            destination = graph.coordinatesToString(graph.vertexToCoordinate(gap(seed)));
+            source = graph.coordinatesToString(graph.vertexToCoordinate(getRandomNumber()));
+            destination = graph.coordinatesToString(graph.vertexToCoordinate(getRandomNumber()));
             
             for (size_t cenary {1}; cenary <= 4; ++cenary) {  
                 generalCSV1 << i << ',' << cenary << ',' 
@@ -112,7 +112,7 @@ void part2(Graph& graph) {
             for (size_t cenary {1}; cenary <= 4; ++cenary) {  
                 for (size_t heuristic {1}; heuristic <= 2; ++heuristic) {  
                     generalCSV2 << i << ',' << heuristic << ',' << cenary << ','
-                                << graph.AStar(source, destination, cenary, heuristic, {}).first << '\n';
+                                << graph.AStar(source, destination, cenary, heuristic, {}) << '\n';
                 }
             }
         }
@@ -140,7 +140,7 @@ void part2(Graph& graph) {
  * 
  * The results are logged in the CSV file `part3-results.csv` with the following format:
  * `Iteration,Algorithm,Cenary,Heuristic,Initial State,Objective,Generated vertices amount,Visited vertices amount,Cost,Path`.
- */
+*/ 
 
 void part3(Graph& graph) {
     std::string source {};
@@ -152,8 +152,8 @@ void part3(Graph& graph) {
         generalCSV << "Iteration,Algorithm,Cenary,Heuristic,Initial State,Objective,Generated vertices amount,Visited vertices amount,Cost,Path\n";
 
         for (size_t i {0}; i < 50; ++i) {
-            source = graph.coordinatesToString(graph.vertexToCoordinate(gap(seed)));
-            destination = graph.coordinatesToString(graph.vertexToCoordinate(gap(seed)));
+            source = graph.coordinatesToString(graph.vertexToCoordinate(getRandomNumber()));
+            destination = graph.coordinatesToString(graph.vertexToCoordinate(getRandomNumber()));
             
             for (size_t cenary {1}; cenary <= 4; ++cenary) {  
                 for (size_t heuristic {1}; heuristic <= 2; ++heuristic) {  
@@ -161,7 +161,7 @@ void part3(Graph& graph) {
                                << graph.greedySearch(source, destination, cenary, heuristic) << '\n';
 
                     generalCSV << i << ",A*," << cenary << "," << heuristic << ","
-                               << graph.AStar(source, destination, cenary, heuristic, {}).first << '\n';
+                               << graph.AStar(source, destination, cenary, heuristic, {}) << '\n';
                 }
             }
         }
@@ -201,8 +201,8 @@ void part4(Graph& graph) {
         generalCSV << "Iteration,Algorithm,Cenary,Heuristic,Initial State,Objective,Generated vertices amount,Visited vertices amount,Cost,Path\n";
 
         for (size_t i {0}; i < 20; ++i) {
-            source = graph.coordinatesToString(graph.vertexToCoordinate(gap(seed)));
-            destination = graph.coordinatesToString(graph.vertexToCoordinate(gap(seed)));
+            source = graph.coordinatesToString(graph.vertexToCoordinate(getRandomNumber()));
+            destination = graph.coordinatesToString(graph.vertexToCoordinate(getRandomNumber()));
 
             for (size_t cenary {1}; cenary <= 4; ++cenary) {
                 for (size_t j {0}; j < 10; ++j) {
@@ -238,7 +238,7 @@ void part4(Graph& graph) {
  * 
  * The results are saved in the CSV file `part5-results.csv` with the following format:
  * `Iteration,Algorithm,Cenary,Heuristic,Initial State,Objective,Generated vertices amount,Visited vertices amount,Cost,Path`.
- */
+*/
  
 void part5(Graph& graph) {
     std::string source {};
@@ -251,15 +251,15 @@ void part5(Graph& graph) {
         generalCSV << "Iteration,Algorithm,Cenary,Heuristic,Initial State,Objective,Generated vertices amount,Visited vertices amount,Cost,Path\n";
 
         for (size_t i {0}; i < 25; ++i) {
-            source = graph.coordinatesToString(graph.vertexToCoordinate(gap(seed)));
-            destination = graph.coordinatesToString(graph.vertexToCoordinate(gap(seed)));
+            source = graph.coordinatesToString(graph.vertexToCoordinate(getRandomNumber()));
+            destination = graph.coordinatesToString(graph.vertexToCoordinate(getRandomNumber()));
             
             for (size_t cenary {1}; cenary <= 4; ++cenary) {
                 for (size_t heuristic {1}; heuristic <= 2; ++heuristic) {
                     drugstores = generateDrugstores(graph);
 
                     generalCSV << i << ",A*," << cenary << "," << heuristic << ","
-                               << graph.AStar(source, destination, cenary, heuristic, drugstores).first << '\n';
+                               << graph.AStar(source, destination, cenary, heuristic, drugstores) << '\n';
                 }
             }
         }
@@ -270,10 +270,12 @@ void part5(Graph& graph) {
     }
 }
 
+
 int main(void) {	
 	buildGraphFile();
 	
     Graph graph("graph.txt", cartesian_plane, map_vertices_to_coordinates, map_coordinates_to_vertices, false);
+    
 	part1(graph);
 	part2(graph);
 	part3(graph);
