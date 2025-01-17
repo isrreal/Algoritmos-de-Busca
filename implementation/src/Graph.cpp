@@ -509,31 +509,43 @@ std::string Graph::depthFirstSearch(const std::string& u, const std::string& v, 
 }
 
 /**
- * @brief Performs A* pathfinding algorithm to find the optimal path between two points, using search trees.
+ * @brief Implements the A* pathfinding algorithm to find the optimal path between two points in a graph.
  *
- * @param u The starting point (initial state) as a string representation of coordinates.
- * @param v The destination point (goal state) as a string representation of coordinates.
- * @param cenary The scenario or environment configuration that influences the search.
- * @param heuristic The heuristic function used to guide the search (e.g., Manhattan, Euclidean).
+ * @param u The starting point as a string representation of coordinates (e.g., "x,y").
+ * @param v The destination point as a string representation of coordinates (e.g., "x,y").
+ * @param cenary An integer representing the environmental configuration that influences path costs.
+ * @param heuristic An integer representing the heuristic function to be used (e.g., 1 for Manhattan, 2 for Euclidean).
+ * @param drugstores A set of string coordinates representing drugstore locations. If provided, the algorithm prioritizes visiting a drugstore before continuing to the destination.
+ * 
+ * @return A string containing details of the path found, including the reconstructed path, total cost, 
+ *         number of generated vertices, and number of visited vertices. If the destination is unreachable, 
+ *         returns an appropriate error message.
  * 
  * @details
- * This function implements the A* algorithm for finding the shortest path from the starting node (u) 
- * to the destination node (v). The algorithm combines the actual cost to reach a node (g(n)) with an estimate
- * of the cost from that node to the goal (h(n)), where the total cost function is defined as f(n) = g(n) + h(n).
+ * This function uses the A* algorithm to compute the shortest path from a starting node (u) to a destination 
+ * node (v) in a weighted graph. The A* algorithm evaluates paths by minimizing the total cost function 
+ * - f(n) = g(n) + h(n), where:
+ * - g(n): The accumulated cost to reach node (n).
+ * - h(n): The heuristic estimate of the cost to reach the destination from node (n).
  * 
- * The search expands nodes by always choosing the one with the lowest total cost (f(n)), ensuring that 
- * the most promising nodes are explored first. At each step, the algorithm evaluates neighboring nodes 
- * and adds them to the open set if they are not already visited or if a cheaper path to them is found.
+ * The algorithm processes nodes by expanding the one with the lowest f(n) value first, ensuring an 
+ * efficient and guided search toward the destination. 
  * 
- * The A* search continues until the goal is reached or all possible paths have been explored. The function 
- * also takes into account the given scenario (cenary) and heuristic function to guide the search efficiently.
- *
- * @note Nodes can be repeated because the same vertex may appear with a lower cost than its previous value.
- *
- *
+ * If drugstores are provided, the algorithm prioritizes visiting the nearest drugstore before resuming 
+ * the search for the destination. Once a drugstore is visited, the search restarts from the drugstore.
+ * 
+ * The algorithm maintains a priority queue for open nodes, a cost map to track f(n) values, and a 
+ * search tree for backtracking the final path. Nodes are revisited if a cheaper path to them is found during exploration.
+ * 
+ * @note
+ * - The heuristic function must be consistent (admissible and monotonic) to guarantee optimality.
+ * - Drugstores are optional; if provided, the algorithm ensures at least one is visited before reaching the destination.
+ * - Nodes are uniquely identified by their coordinates and mapped to vertices in the graph.
+ * 
+ * @exception
+ * Returns an error message if the destination is unreachable from the source.
  */
- 
-// Definindo Node como um tipo de ponteiro compartilhado
+
 
 std::string Graph::AStar(const std::string& u, const std::string& v, size_t cenary, size_t heuristic, const std::unordered_set<std::string>& drugstores) {
     std::unordered_map<size_t, size_t> cost_map; // guarda f(n) = g(n) + h(n)
