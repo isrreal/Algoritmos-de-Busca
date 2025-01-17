@@ -32,7 +32,7 @@ inline void buildMatrix() {
     }
 }
 
-inline std::string coordinateToString(size_t x, size_t y) {
+inline std::string coordinatesToString(size_t x, size_t y) {
     return "(" + std::to_string(x) + " " + std::to_string(y) + ")";
 }
 
@@ -45,30 +45,30 @@ inline void buildGraphFile() {
         return;
     }
     
-    std::string current_coordenate;
-    std::string neighbor_down;
-    std::string neighbor_right;
+    std::string current_coordenate {};
+    std::string neighbor_down {};
+    std::string neighbor_right {};
     
     for (size_t x {0}; x < 31; ++x) {
         for (size_t y {0}; y < 31; ++y) {
 
-            current_coordenate = coordinateToString(x, y);
+            current_coordenate = coordinatesToString(x, y);
             
             if ((x + 1) < 31) {
-                neighbor_down = coordinateToString(x + 1, y);
+                neighbor_down = coordinatesToString(x + 1, y);
                 graph_edges << map_coordinates_to_vertices[current_coordenate] << " " 
                             << map_coordinates_to_vertices[neighbor_down] << '\n';
             }
             
             if ((y + 1) < 31) {
-                neighbor_right = coordinateToString(x, y + 1);
+                neighbor_right = coordinatesToString(x, y + 1);
                 graph_edges << map_coordinates_to_vertices[current_coordenate] << " " 
                             << map_coordinates_to_vertices[neighbor_right] << '\n';
             }
         }
     }
 
-    graph_edges.close();
+	graph_edges.close();
 }
 
 /**
@@ -101,5 +101,7 @@ inline std::unordered_set<std::string> generateDrugstores(Graph& graph) {
     
     return drugstores;
 }
+
+inline size_t getRandomNumber() { return gap(seed); }
 
 #endif
