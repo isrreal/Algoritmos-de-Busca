@@ -11,8 +11,10 @@
 #include <queue>
 #include <sstream>
 #include <fstream>
-#include "Node.hpp"
 #include <memory>
+#include "Node.hpp"
+
+using NodePtr = std::shared_ptr<Node>;
 
 class Graph {
 private:
@@ -73,12 +75,9 @@ public:
  				   size_t generated_vertices_amount,
  				   size_t visited_vertices_amount);
  				   
-   	size_t pathCompute(std::stack<std::pair<size_t, size_t>>& last_visited,
-                         size_t path_cost, size_t steps_root_to_objective_amount, size_t cenary, size_t temp);
-                     
  	size_t neighborCost(size_t u, size_t v, size_t steps_root_to_objective_amount, size_t cenary);
  	
-	std::vector<std::string> buildPath(size_t source, size_t destination, const std::vector<int>& predecessor);
+	std::vector<std::string> buildPath(NodePtr node);
  	
    	std::string coordinatesToString(const std::pair<size_t, size_t>& coordinates);
 
@@ -96,7 +95,7 @@ public:
     
     std::string uniformCostSearch(const std::string& u, const std::string& v, size_t cenary);
     
-    std::pair<std::string, size_t> AStar(const std::string& u, const std::string& v, size_t cenary, size_t heuristic, const std::unordered_set<std::string>& drugstores);
+    std::string AStar(const std::string& u, const std::string& v, size_t cenary, size_t heuristic, const std::unordered_set<std::string>& drugstores);
     
 	std::string greedySearch(const std::string& u, const std::string& v, size_t cenary, size_t heuristic);
     
